@@ -2,6 +2,10 @@
 
 Members API built with FastAPI.
 
+## Guidelines
+
+FastApi guidelines comes from this project: https://github.com/zhanymkanov/fastapi-best-practices
+
 ## Requirements
 
 - Python 3.14
