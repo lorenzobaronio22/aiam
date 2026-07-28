@@ -68,23 +68,27 @@ from src.posts.constants import ErrorCode as PostsErrorCode
 # DON'T — blocking call inside async route freezes the entire event loop
 @router.get("/bad")
 async def bad():
-    time.sleep(10)            # blocks every request on this worker
+    time.sleep(10)  # blocks every request on this worker
     return {"ok": True}
+
 
 # DO — sync route lets FastAPI run it in a threadpool
 @router.get("/sync-ok")
 def sync_ok():
-    time.sleep(10)            # blocks one threadpool worker, not the loop
+    time.sleep(10)  # blocks one threadpool worker, not the loop
     return {"ok": True}
+
 
 # DO — async route with awaitable sleep
 @router.get("/async-ok")
 async def async_ok():
-    await asyncio.sleep(10)   # yields control, loop keeps serving requests
+    await asyncio.sleep(10)  # yields control, loop keeps serving requests
     return {"ok": True}
+
 
 # DO — async route that has to call a sync library
 from fastapi.concurrency import run_in_threadpool
+
 
 @router.get("/wrap")
 async def wrap():
@@ -114,7 +118,7 @@ class UserCreate(BaseModel):
     first_name: str = Field(min_length=1, max_length=128)
     username: str = Field(min_length=1, max_length=128, pattern=r"^[A-Za-z0-9_-]+$")
     email: EmailStr
-    age: int = Field(ge=18)                     # required, must be >= 18
+    age: int = Field(ge=18)  # required, must be >= 18
     favorite_band: MusicBand | None = None
     website: AnyUrl | None = None
 ```
@@ -183,9 +187,11 @@ from fastapi import Depends
 
 PostDep = Annotated[dict, Depends(valid_post_id)]
 
+
 @router.get("/posts/{post_id}")
 async def get_post(post: PostDep):
     return post
+
 
 # Avoid — default-argument form (still works, but legacy)
 @router.get("/posts/{post_id}")
@@ -225,6 +231,7 @@ Use **`PyJWT`**, not `python-jose` (unmaintained).
 ```python
 import jwt  # PyJWT
 from jwt.exceptions import InvalidTokenError
+
 
 def decode_token(token: str) -> dict:
     try:
@@ -287,10 +294,11 @@ metadata = MetaData(naming_convention=POSTGRES_INDEXES_NAMING_CONVENTION)
 ```python
 from fastapi import BackgroundTasks
 
+
 @router.post("/signup")
 async def signup(data: SignupIn, bg: BackgroundTasks):
     user = await service.create_user(data)
-    bg.add_task(send_welcome_email, user.email)   # fire-and-forget, in-process
+    bg.add_task(send_welcome_email, user.email)  # fire-and-forget, in-process
     return user
 ```
 
@@ -364,7 +372,7 @@ from src.config import settings
 SHOW_DOCS_IN = {"local", "staging"}
 app_kwargs = {"title": "My API"}
 if settings.ENVIRONMENT not in SHOW_DOCS_IN:
-    app_kwargs["openapi_url"] = None    # disables /docs and /redoc
+    app_kwargs["openapi_url"] = None  # disables /docs and /redoc
 
 app = FastAPI(**app_kwargs)
 ```
@@ -385,7 +393,7 @@ router = APIRouter()
     tags=["items"],
     responses={
         status.HTTP_400_BAD_REQUEST: {"model": ErrorResponse, "description": "Validation error"},
-        status.HTTP_409_CONFLICT:    {"model": ErrorResponse, "description": "Slug already exists"},
+        status.HTTP_409_CONFLICT: {"model": ErrorResponse, "description": "Slug already exists"},
     },
 )
 async def create_item(payload: ItemCreate) -> ItemResponse: ...
