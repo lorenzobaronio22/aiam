@@ -32,7 +32,7 @@ def load_sync() -> dict[str, dict]:
         return {}
     try:
         return json.loads(constants.DATA_FILE.read_text())
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         return {}
 
 

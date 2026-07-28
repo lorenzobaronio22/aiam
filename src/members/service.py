@@ -43,7 +43,9 @@ async def update_member(member_id: str, payload: MemberUpdate) -> MemberOut:
     if record is None:
         raise MemberNotFound(member_id)
 
-    if payload.email is not None and utils.email_exists(data, str(payload.email), exclude_id=member_id):
+    if payload.email is not None and utils.email_exists(
+        data, str(payload.email), exclude_id=member_id
+    ):
         raise DuplicateMemberEmail(str(payload.email))
 
     if payload.name is not None:
