@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from src.config import settings
 from src.exceptions import (
     ProblemError,
     http_exception_handler,
@@ -11,13 +10,9 @@ from src.exceptions import (
 )
 from src.members.router import router as members_router
 
-SHOW_DOCS_IN = {"local", "staging"}
-
-app_kwargs = {"title": "Members API"}
-if settings.ENVIRONMENT not in SHOW_DOCS_IN:
-    app_kwargs["openapi_url"] = None
-
-app = FastAPI(**app_kwargs)
+app = FastAPI(
+    title="Members API",
+)
 
 app.add_exception_handler(ProblemError, problem_error_handler)
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)

@@ -27,15 +27,18 @@ def problem(status_code: int, title: str, detail: str, **extras) -> JSONResponse
     )
 
 
-async def problem_error_handler(request: Request, exc: ProblemError):
+async def problem_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    assert isinstance(exc, ProblemError)
     return problem(exc.status_code, exc.title, exc.detail, **exc.extras)
 
 
-async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+async def http_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    assert isinstance(exc, StarletteHTTPException)
     return problem(exc.status_code, exc.detail or "HTTP Error", str(exc.detail or ""))
 
 
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
+async def validation_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    assert isinstance(exc, RequestValidationError)
     return problem(
         status.HTTP_422_UNPROCESSABLE_ENTITY,
         "Validation Error",
