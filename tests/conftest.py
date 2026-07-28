@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 
 import pytest
@@ -6,13 +5,6 @@ from httpx import ASGITransport, AsyncClient
 
 from src.main import app
 from src.members import constants, utils
-
-TESTS_DIR = Path(__file__).resolve().parent
-ROOT = TESTS_DIR.parent
-sys.path.insert(0, str(ROOT))
-
-SRC = ROOT / "src"
-sys.path.insert(0, str(SRC))
 
 
 class DummyLock:
