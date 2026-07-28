@@ -1,0 +1,28 @@
+# Version control
+.git
+.github
+
+# Python
+__pycache__
+**/__pycache__
+*.py[oc]
+*.egg-info
+.pytest_cache
+.ruff_cache
+
+# Virtual environments (rebuilt inside the image; platform-specific)
+.venv
+
+# Local runtime data (created at runtime, not baked into the image)
+data
+
+# Tests and docs (not needed to build or run the image)
+tests
+README.md
+AGENTS.md
+
+# Docker / local tooling
+Dockerfile
+.dockerignore
+docker-compose.yml
+.env
