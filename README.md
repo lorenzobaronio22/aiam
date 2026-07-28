@@ -19,11 +19,27 @@ Start the app with Uvicorn:
 uvicorn main:app --reload
 ```
 
-Or use the convenience script:
+Or run the canonical src entrypoint:
 
 ```bash
-aiam
+uvicorn src.main:app --reload
 ```
+
+## Architecture
+
+The project uses a domain-oriented `src/` layout:
+
+- `src/main.py`: app composition, exception handlers, docs visibility policy
+- `src/exceptions.py`: shared `application/problem+json` envelope and handlers
+- `src/config.py`: environment settings
+- `src/members/router.py`: API endpoints
+- `src/members/dependencies.py`: reusable route dependencies
+- `src/members/service.py`: members business logic
+- `src/members/schemas.py`: Pydantic request/response schemas
+- `src/members/constants.py`: data path constants
+- `src/members/utils.py`: JSON store I/O helpers
+
+`main.py` is a compatibility shim that re-exports `app` from `src.main`.
 
 ## API
 
@@ -46,4 +62,11 @@ Install the test extra and run pytest:
 ```bash
 uv sync --extra test
 pytest
+```
+
+## Lint and Format
+
+```bash
+ruff check --fix .
+ruff format .
 ```

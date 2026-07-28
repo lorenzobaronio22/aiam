@@ -4,7 +4,8 @@ from pathlib import Path
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-import main
+from src.main import app
+from src.members import constants, utils
 
 
 class DummyLock:
@@ -18,14 +19,14 @@ class DummyLock:
 def _configure_store(tmp_path: Path) -> None:
     data_dir = tmp_path / "data"
     data_file = data_dir / "members.json"
-    main.DATA_DIR = data_dir
-    main.DATA_FILE = data_file
-    main._lock = DummyLock()
+    constants.DATA_DIR = data_dir
+    constants.DATA_FILE = data_file
+    utils._store_lock = DummyLock()
 
 
 @pytest.mark.anyio
 async def test_healthcheck():
-    transport = ASGITransport(app=main.app)
+    transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.get("/")
 
@@ -36,7 +37,7 @@ async def test_healthcheck():
 @pytest.mark.anyio
 async def test_member_crud(tmp_path):
     _configure_store(tmp_path)
-    transport = ASGITransport(app=main.app)
+    transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         create_response = await client.post(
             "/members",
@@ -81,7 +82,7 @@ async def test_member_crud(tmp_path):
 @pytest.mark.anyio
 async def test_json_store_is_created(tmp_path):
     _configure_store(tmp_path)
-    transport = ASGITransport(app=main.app)
+    transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.post(
             "/members",
@@ -89,6 +90,6 @@ async def test_json_store_is_created(tmp_path):
         )
 
     assert response.status_code == 201
-    assert main.DATA_FILE.exists()
-    stored = json.loads(main.DATA_FILE.read_text())
+    assert constants.DATA_FILE.exists()
+    stored = json.loads(constants.DATA_FILE.read_text())
     assert len(stored) == 1
