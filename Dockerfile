@@ -57,7 +57,7 @@ USER app
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/', timeout=2)"]
+    CMD ["python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
 
 # Exec form so SIGTERM reaches uvicorn directly for graceful shutdown.
 # Single process per container: replication is handled by the orchestrator.

@@ -19,7 +19,7 @@ app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 
-@app.get("/")
+@app.get("/health")
 async def healthcheck():
     return {"status": "ok", "service": app.title, "version": app.version}
 
