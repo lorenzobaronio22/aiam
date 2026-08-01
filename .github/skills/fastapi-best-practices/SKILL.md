@@ -14,6 +14,7 @@ Use this skill when you are changing or reviewing code in this repo's FastAPI ap
 - JWT authentication helpers
 - httpx test setup and dependency overrides
 - Alembic migrations and repository-level linting
+- Frontend apps served through FastAPI, including static build output and client-side routing
 
 ## What to Do
 1. Follow the repo conventions in [the full guide](./references/guide.md).

@@ -41,6 +41,16 @@ src/
 
 Use explicit imports across domains. Avoid wildcard imports and deep package coupling.
 
+## Frontend Applications
+
+- Use `app.frontend()` or `router.frontend()` to serve a built frontend app from static files such as `dist/`.
+- Treat this as static build output only; it does not provide server-side rendering.
+- Keep the frontend build step separate, then point FastAPI at the generated directory.
+- For SPAs and client-side routing, rely on the default `fallback="auto"` in most cases. Use `fallback="index.html"` for browser navigation to client-routed pages, `fallback="404.html"` for static site generators, and `fallback=None` when you want missing frontend paths to return a normal `404`.
+- Use `check_dir=False` only when the frontend build output is created after the app object is instantiated, such as in a separate build step or a development workflow.
+- Frontend routes still obey normal FastAPI precedence: API path operations win first, then frontend file serving, and app or router dependencies and middleware still apply to frontend responses.
+- Use `APIRouter.frontend()` when the frontend should live under a prefix such as `/app`.
+
 ## Routes and Async Boundaries
 
 | Route behavior | Preferred shape |
