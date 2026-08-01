@@ -12,3 +12,8 @@ wheels/
 
 # Local runtime data
 data/
+
+# Node-generated files
+.npm-cache/
+node_modules/
+dist/
