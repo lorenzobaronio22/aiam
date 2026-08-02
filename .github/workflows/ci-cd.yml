@@ -173,7 +173,7 @@ jobs:
 
       - name: Verify deployment
         run: |
-          response=$(curl -fsS --retry 5 --retry-delay 3 https://aiam.tail10187.ts.net/)
+          response=$(curl -fsS --retry 5 --retry-delay 3 https://aiam.tail10187.ts.net/health)
           echo "$response"
           status=$(echo "$response" | jq -r '.status')
           if [ "$status" != "ok" ]; then
