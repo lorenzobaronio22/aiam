@@ -31,6 +31,17 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-editable
 
+# ---- frontend-builder ---------------------------------------------------
+FROM node:24-alpine AS frontend-builder
+
+WORKDIR /frontend
+
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm ci
+
+COPY frontend ./
+RUN npm run build
+
 # ---- final ----------------------------------------------------------------
 FROM python:3.14-slim
 
@@ -42,6 +53,7 @@ WORKDIR /app
 # Only the synced virtual environment is copied over; no compilers, caches,
 # or source files from the builder stage make it into the final image.
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
+COPY --from=frontend-builder --chown=app:app /dist /app/dist
 
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -57,7 +69,7 @@ USER app
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/', timeout=2)"]
+    CMD ["python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
 
 # Exec form so SIGTERM reaches uvicorn directly for graceful shutdown.
 # Single process per container: replication is handled by the orchestrator.

@@ -6,9 +6,16 @@ dist/
 wheels/
 *.egg-info
 .pytest_cache/
+.ruff_cache/
+.uv-cache/
 
 # Virtual environments
 .venv
 
 # Local runtime data
 data/
+
+# Node-generated files
+.npm-cache/
+node_modules/
+dist/
