@@ -8,6 +8,18 @@
 			"isBackground": false
 		},
 		{
+			"label": "frontend-build",
+			"type": "shell",
+			"command": "cd frontend && npm run build",
+			"isBackground": false
+		},
+		{
+			"label": "frontend-test-run",
+			"type": "shell",
+			"command": "cd frontend && npm run test:run",
+			"isBackground": false
+		},
+		{
 			"label": "frontend-test-run",
 			"type": "shell",
 			"command": "cd frontend && npm run test:run",

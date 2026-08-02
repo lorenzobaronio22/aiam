@@ -131,7 +131,6 @@ describe("MembersPage", () => {
       updatedAt: "2026-08-02T08:00:00Z",
     });
     membersApiMocks.deleteMember.mockResolvedValue(undefined);
-    vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const { wrapper, router } = await factory();
     await flushPromises();

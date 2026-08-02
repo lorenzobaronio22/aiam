@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import MemberDeleteConfirm from "./MemberDeleteConfirm.vue";
+
 const model = defineModel<{
   name: string;
   email: string;
@@ -81,15 +83,12 @@ const emit = defineEmits<{
         <button class="button-primary" :disabled="isLoadingDetail || isSaving || isDeleting" type="submit">
           {{ isSaving ? "Salvataggio..." : mode === "create" ? "Crea membro" : "Salva modifiche" }}
         </button>
-        <button
+        <MemberDeleteConfirm
           v-if="mode === 'edit'"
-          class="button-danger"
-          :disabled="isSaving || isDeleting"
-          type="button"
-          @click="emit('delete')"
-        >
-          {{ isDeleting ? "Eliminazione..." : "Elimina membro" }}
-        </button>
+          :is-deleting="isDeleting"
+          :is-disabled="isSaving || isLoadingDetail"
+          @confirm="emit('delete')"
+        />
       </div>
     </form>
   </section>

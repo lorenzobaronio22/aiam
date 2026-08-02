@@ -110,12 +110,6 @@ async function handleSubmit(): Promise<void> {
 }
 
 async function handleDelete(): Promise<void> {
-  const confirmed = window.confirm("Vuoi eliminare definitivamente questo membro?");
-
-  if (!confirmed) {
-    return;
-  }
-
   await deleteSelectedMember();
 
   if (selectedId.value === null && routeMemberId.value !== null) {
