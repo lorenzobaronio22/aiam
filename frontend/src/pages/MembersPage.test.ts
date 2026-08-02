@@ -117,7 +117,7 @@ describe("MembersPage", () => {
     await flushPromises();
 
     expect(router.currentRoute.value.path).toBe("/member");
-    expect(wrapper.get(".member-form__title").text()).toBe("Nuovo membro");
+    expect(wrapper.find(".button-danger").exists()).toBe(false);
   });
 
   it("creates a member and supports deletion from the edit state", async () => {
@@ -151,7 +151,7 @@ describe("MembersPage", () => {
 
     expect(membersApiMocks.deleteMember).toHaveBeenCalledWith("member-2");
     expect(router.currentRoute.value.path).toBe("/member");
-    expect(wrapper.get(".member-form__title").text()).toBe("Nuovo membro");
+    expect(wrapper.find(".button-danger").exists()).toBe(false);
   });
 
   it("shows the duplicate email error returned by the API", async () => {

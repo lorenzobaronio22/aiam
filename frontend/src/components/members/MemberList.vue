@@ -16,10 +16,7 @@ const emit = defineEmits<{
 <template>
   <section class="member-list section-card">
     <div class="member-list__header">
-      <div>
-        <span class="eyebrow">Archivio</span>
-        <h2 class="member-list__title">Membri</h2>
-      </div>
+      <span class="eyebrow">Archivio</span>
     </div>
 
     <p v-if="isLoading" class="member-list__status">Caricamento elenco in corso...</p>
@@ -57,12 +54,6 @@ const emit = defineEmits<{
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-}
-
-.member-list__title {
-  margin: 0.35rem 0 0;
-  font-family: var(--font-display);
-  font-size: 2rem;
 }
 
 .member-list__status {
@@ -110,9 +101,32 @@ const emit = defineEmits<{
 }
 
 @media (max-width: 720px) {
+  .member-list {
+    gap: 0.95rem;
+    padding: 1rem;
+  }
+
   .member-list__header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .member-list__status {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .member-list__items {
+    gap: 0.55rem;
+  }
+
+  .member-list__item {
+    border-radius: 16px;
+    padding: 0.78rem;
+  }
+
+  .member-list__item-meta {
+    font-size: 0.8rem;
   }
 }
 </style>

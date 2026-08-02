@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import MemberForm from "../components/members/MemberForm.vue";
@@ -12,6 +12,7 @@ const memberDraft = ref({
 });
 
 const {
+  clearFeedback,
   createMember,
   deleteSelectedMember,
   errorMessage,
@@ -30,6 +31,17 @@ const {
   updateMember,
 } = useMembers();
 
+type ToastTone = "success" | "error";
+
+type ToastMessage = {
+  id: number;
+  message: string;
+  tone: ToastTone;
+};
+
+const toasts = ref<ToastMessage[]>([]);
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
 const route = useRoute();
 const router = useRouter();
 
@@ -39,6 +51,50 @@ const routeMemberId = computed(() => {
 });
 
 const pageMode = computed(() => (isCreateMode.value ? "create" : "edit"));
+
+function showToast(message: string, tone: ToastTone): void {
+  toasts.value = [
+    {
+      id: Date.now(),
+      message,
+      tone,
+    },
+  ];
+
+  if (toastTimer) {
+    clearTimeout(toastTimer);
+  }
+
+  toastTimer = setTimeout(() => {
+    toasts.value = [];
+    clearFeedback();
+    toastTimer = null;
+  }, 3200);
+}
+
+watch(successMessage, (message) => {
+  if (!message) {
+    return;
+  }
+
+  showToast(message, "success");
+});
+
+watch(errorMessage, (message) => {
+  if (!message) {
+    return;
+  }
+
+  showToast(message, "error");
+});
+
+onBeforeUnmount(() => {
+  if (!toastTimer) {
+    return;
+  }
+
+  clearTimeout(toastTimer);
+});
 
 watch(
   selectedMember,
@@ -119,6 +175,17 @@ async function handleDelete(): Promise<void> {
 
 <template>
   <main class="page-frame members-page">
+    <div class="members-page__toasts" aria-live="polite" aria-atomic="true">
+      <p
+        v-for="toast in toasts"
+        :key="toast.id"
+        class="members-page__toast"
+        :class="`members-page__toast--${toast.tone}`"
+      >
+        {{ toast.message }}
+      </p>
+    </div>
+
     <section class="members-page__hero section-card">
       <div class="members-page__hero-copy">
         <span class="eyebrow">Operativita</span>
@@ -130,27 +197,26 @@ async function handleDelete(): Promise<void> {
     </section>
 
     <div class="members-page__grid">
-      <MemberList
-        :is-loading="isLoadingList"
-        :members="members"
-        :selected-id="selectedId"
-        @select="handleSelect"
-      />
-
       <div class="members-page__panel">
         <MemberForm
           v-model="memberDraft"
-          :error-message="errorMessage"
           :is-deleting="isDeleting"
           :is-loading-detail="isLoadingDetail"
           :is-saving="isSaving"
           :mode="pageMode"
-          :success-message="successMessage"
           @delete="handleDelete"
           @submit="handleSubmit"
           @unload="handleUnloadSelection"
         />
       </div>
+
+      <MemberList
+        class="members-page__archive"
+        :is-loading="isLoadingList"
+        :members="members"
+        :selected-id="selectedId"
+        @select="handleSelect"
+      />
     </div>
   </main>
 </template>
@@ -166,6 +232,38 @@ async function handleDelete(): Promise<void> {
   display: grid;
   gap: 1rem;
   padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.members-page__toasts {
+  position: fixed;
+  top: 0.8rem;
+  right: 0.8rem;
+  z-index: 20;
+  display: grid;
+  gap: 0.55rem;
+  width: min(23rem, calc(100vw - 1.6rem));
+}
+
+.members-page__toast {
+  margin: 0;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  padding: 0.75rem 0.9rem;
+  box-shadow: var(--shadow-soft);
+  line-height: 1.45;
+  backdrop-filter: blur(10px);
+}
+
+.members-page__toast--success {
+  border-color: rgba(0, 114, 166, 0.25);
+  background: rgba(235, 247, 255, 0.92);
+  color: #004864;
+}
+
+.members-page__toast--error {
+  border-color: rgba(159, 45, 34, 0.25);
+  background: rgba(255, 236, 233, 0.93);
+  color: #7c261f;
 }
 
 .members-page__hero-copy {
@@ -196,11 +294,94 @@ async function handleDelete(): Promise<void> {
 .members-page__panel {
   display: grid;
   gap: 1.25rem;
+  position: sticky;
+  top: 0.9rem;
+  align-self: start;
+}
+
+.members-page__archive {
+  max-height: calc(100vh - 1.8rem);
+  overflow: auto;
 }
 
 @media (max-width: 960px) {
+  .members-page {
+    gap: 0.9rem;
+    padding: 0.9rem 0 2rem;
+  }
+
+  .members-page__hero {
+    padding: 1rem;
+  }
+
+  .members-page__hero-copy {
+    gap: 0.4rem;
+  }
+
+  .members-page__toasts {
+    top: 0.45rem;
+    right: 0.45rem;
+    width: calc(100vw - 0.9rem);
+  }
+
+  .members-page__toast {
+    padding: 0.62rem 0.74rem;
+    font-size: 0.92rem;
+  }
+
+  .members-page__title {
+    font-size: 1.55rem;
+  }
+
+  .members-page__lead {
+    font-size: 0.93rem;
+    line-height: 1.45;
+  }
+
   .members-page__grid {
     grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .members-page__panel {
+    top: 0.45rem;
+    z-index: 2;
+    max-height: calc(100dvh - 1rem);
+    overflow: hidden;
+  }
+
+  .members-page__panel :deep(.member-form) {
+    gap: 0.9rem;
+    max-height: calc(100dvh - 1rem);
+    overflow: auto;
+  }
+
+  .members-page__archive {
+    max-height: 46dvh;
+  }
+}
+
+@media (max-width: 560px) {
+  .members-page__hero {
+    display: none;
+  }
+
+  .members-page__panel {
+    top: 0.35rem;
+  }
+
+  .members-page__toasts {
+    top: 0.3rem;
+    right: 0.3rem;
+    width: calc(100vw - 0.6rem);
+  }
+
+  .members-page__panel :deep(.member-form) {
+    max-height: calc(100dvh - 0.8rem);
+  }
+
+  .members-page__archive {
+    max-height: 42dvh;
   }
 }
 </style>
