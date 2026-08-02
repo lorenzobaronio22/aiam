@@ -24,8 +24,8 @@ const route = useRoute();
         </RouterLink>
         <RouterLink
           class="app-shell__nav-link"
-          :class="{ 'app-shell__nav-link--active': route.path.startsWith('/members') }"
-          to="/members"
+          :class="{ 'app-shell__nav-link--active': route.path.startsWith('/member') }"
+          to="/member"
         >
           Membri
         </RouterLink>

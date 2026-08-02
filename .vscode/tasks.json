@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "frontend-test-run",
+			"type": "shell",
+			"command": "cd frontend && npm run test:run",
+			"isBackground": false
+		},
+		{
+			"label": "frontend-test-run",
+			"type": "shell",
+			"command": "cd frontend && npm run test:run",
+			"isBackground": false
+		}
+	]
+}

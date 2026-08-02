@@ -16,6 +16,6 @@ describe("LandingPage", () => {
 
     expect(wrapper.text()).toContain("Gestisci iscrizioni e anagrafiche membri in modo semplice.");
     expect(wrapper.text()).toContain("Apri area membri");
-    expect(wrapper.getComponent(RouterLinkStub).props("to")).toBe("/members");
+    expect(wrapper.getComponent(RouterLinkStub).props("to")).toBe("/member");
   });
 });

@@ -15,6 +15,7 @@ defineProps<{
 
 const emit = defineEmits<{
   delete: [];
+  unload: [];
   submit: [];
 }>();
 </script>
@@ -28,6 +29,15 @@ const emit = defineEmits<{
           {{ mode === "create" ? "Nuovo membro" : "Modifica membro" }}
         </h2>
       </div>
+      <button
+        v-if="mode === 'edit'"
+        class="button-secondary"
+        :disabled="isLoadingDetail || isSaving || isDeleting"
+        type="button"
+        @click="emit('unload')"
+      >
+        Nuovo membro
+      </button>
     </div>
 
     <p v-if="isLoadingDetail" class="member-form__status">Caricamento scheda membro...</p>

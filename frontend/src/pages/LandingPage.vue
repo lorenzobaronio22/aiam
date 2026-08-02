@@ -14,7 +14,7 @@ import { RouterLink } from "vue-router";
         </p>
 
         <div class="landing-page__actions">
-          <RouterLink class="button-primary" to="/members">Apri area membri</RouterLink>
+          <RouterLink class="button-primary" to="/member">Apri area membri</RouterLink>
         </div>
       </div>
 

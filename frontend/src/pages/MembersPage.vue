@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import MemberForm from "../components/members/MemberForm.vue";
 import MemberList from "../components/members/MemberList.vue";
@@ -25,9 +26,18 @@ const {
   selectMember,
   selectedId,
   selectedMember,
+  startCreate,
   successMessage,
   updateMember,
 } = useMembers();
+
+const route = useRoute();
+const router = useRouter();
+
+const routeMemberId = computed(() => {
+  const memberId = route.params.memberId;
+  return typeof memberId === "string" && memberId.length > 0 ? memberId : null;
+});
 
 const pageMode = computed(() => (isCreateMode.value ? "create" : "edit"));
 
@@ -46,9 +56,53 @@ onMounted(() => {
   void loadMembers();
 });
 
+watch(
+  routeMemberId,
+  async (memberId) => {
+    if (!memberId) {
+      startCreate();
+      return;
+    }
+
+    if (selectedId.value === memberId && selectedMember.value) {
+      return;
+    }
+
+    await selectMember(memberId);
+
+    if (selectedId.value === null) {
+      await router.replace({ name: "member" });
+    }
+  },
+  { immediate: true },
+);
+
+async function handleSelect(memberId: string): Promise<void> {
+  if (routeMemberId.value === memberId) {
+    await selectMember(memberId);
+    return;
+  }
+
+  await router.push({ name: "member", params: { memberId } });
+}
+
+async function handleUnloadSelection(): Promise<void> {
+  if (routeMemberId.value === null) {
+    startCreate();
+    return;
+  }
+
+  await router.push({ name: "member" });
+}
+
 async function handleSubmit(): Promise<void> {
   if (pageMode.value === "create") {
     await createMember(memberDraft.value);
+
+    if (selectedId.value) {
+      await router.replace({ name: "member", params: { memberId: selectedId.value } });
+    }
+
     return;
   }
 
@@ -63,6 +117,10 @@ async function handleDelete(): Promise<void> {
   }
 
   await deleteSelectedMember();
+
+  if (selectedId.value === null && routeMemberId.value !== null) {
+    await router.replace({ name: "member" });
+  }
 }
 </script>
 
@@ -83,7 +141,7 @@ async function handleDelete(): Promise<void> {
         :is-loading="isLoadingList"
         :members="members"
         :selected-id="selectedId"
-        @select="selectMember"
+        @select="handleSelect"
       />
 
       <div class="members-page__panel">
@@ -97,6 +155,7 @@ async function handleDelete(): Promise<void> {
           :success-message="successMessage"
           @delete="handleDelete"
           @submit="handleSubmit"
+          @unload="handleUnloadSelection"
         />
 
         <section v-if="!hasMembers && !isLoadingList" class="members-page__hint section-card">

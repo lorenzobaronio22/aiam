@@ -16,9 +16,16 @@ export const routes: RouteRecordRaw[] = [
     component: LandingPage,
   },
   {
-    path: "/members",
-    name: "members",
+    path: "/member/:memberId?",
+    name: "member",
     component: MembersPage,
+  },
+  {
+    path: "/members/:memberId?",
+    redirect: (to) => {
+      const memberId = typeof to.params.memberId === "string" ? to.params.memberId : "";
+      return memberId ? `/member/${memberId}` : "/member";
+    },
   },
   {
     path: "/:pathMatch(.*)*",
