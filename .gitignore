@@ -19,3 +19,6 @@ data/
 .npm-cache/
 node_modules/
 dist/
+
+# Local IDE settings
+.vscode/
