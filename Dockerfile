@@ -53,7 +53,7 @@ WORKDIR /app
 # Only the synced virtual environment is copied over; no compilers, caches,
 # or source files from the builder stage make it into the final image.
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
-COPY --from=frontend-builder --chown=app:app /frontend/dist /app/frontend/dist
+COPY --from=frontend-builder --chown=app:app /dist /app/dist
 
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \

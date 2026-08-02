@@ -1,0 +1,17 @@
+services:
+  aiam:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8010:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      ENVIRONMENT: local
+    develop:
+      watch:
+        - action: rebuild
+          path: ./src
+        - action: rebuild
+          path: ./frontend
