@@ -22,6 +22,57 @@ const jsonHeaders = {
   "Content-Type": "application/json",
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function readString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function readRequiredString(value: unknown, field: string): string {
+  if (typeof value === "string" && value.length > 0) {
+    return value;
+  }
+
+  throw new Error(`Invalid member payload: missing ${field}.`);
+}
+
+function toProblemResponse(payload: unknown): ProblemResponse {
+  if (!isRecord(payload)) {
+    return {};
+  }
+
+  return {
+    type: readString(payload.type),
+    title: readString(payload.title),
+    status: typeof payload.status === "number" ? payload.status : undefined,
+    detail: readString(payload.detail),
+  };
+}
+
+function toMemberPayload(payload: unknown): MemberApiPayload {
+  if (!isRecord(payload)) {
+    throw new Error("Invalid member payload: expected object.");
+  }
+
+  return {
+    id: readRequiredString(payload.id, "id"),
+    name: readRequiredString(payload.name, "name"),
+    email: readRequiredString(payload.email, "email"),
+    created_at: readRequiredString(payload.created_at, "created_at"),
+    updated_at: readRequiredString(payload.updated_at, "updated_at"),
+  };
+}
+
+function toMemberPayloadList(payload: unknown): MemberApiPayload[] {
+  if (!Array.isArray(payload)) {
+    throw new Error("Invalid members payload: expected array.");
+  }
+
+  return payload.map(toMemberPayload);
+}
+
 function toMember(payload: MemberApiPayload): Member {
   return {
     id: payload.id,
@@ -36,7 +87,7 @@ async function parseError(response: Response): Promise<ApiError> {
   const contentType = response.headers.get("content-type") ?? "";
 
   if (contentType.includes("application/json") || contentType.includes("problem+json")) {
-    const payload = (await response.json()) as ProblemResponse;
+    const payload = toProblemResponse(await response.json());
     return new ApiError(
       response.status,
       payload.title ?? "Richiesta non riuscita",
@@ -66,37 +117,37 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export async function listMembers(): Promise<Member[]> {
-  const payload = await request<MemberApiPayload[]>("/members", {
+  const payload = toMemberPayloadList(await request<unknown>("/members", {
     headers: { Accept: jsonHeaders.Accept },
-  });
+  }));
 
   return payload.map(toMember);
 }
 
 export async function getMember(memberId: string): Promise<Member> {
-  const payload = await request<MemberApiPayload>(`/members/${memberId}`, {
+  const payload = toMemberPayload(await request<unknown>(`/members/${memberId}`, {
     headers: { Accept: jsonHeaders.Accept },
-  });
+  }));
 
   return toMember(payload);
 }
 
 export async function createMember(input: MemberInput): Promise<Member> {
-  const payload = await request<MemberApiPayload>("/members", {
+  const payload = toMemberPayload(await request<unknown>("/members", {
     method: "POST",
     headers: jsonHeaders,
     body: JSON.stringify(input),
-  });
+  }));
 
   return toMember(payload);
 }
 
 export async function updateMember(memberId: string, input: MemberInput): Promise<Member> {
-  const payload = await request<MemberApiPayload>(`/members/${memberId}`, {
+  const payload = toMemberPayload(await request<unknown>(`/members/${memberId}`, {
     method: "PUT",
     headers: jsonHeaders,
     body: JSON.stringify(input),
-  });
+  }));
 
   return toMember(payload);
 }

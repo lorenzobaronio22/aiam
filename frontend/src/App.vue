@@ -1,7 +1,20 @@
 <script setup lang="ts">
+import { ref, watch } from "vue";
 import { RouterLink, RouterView, useRoute } from "vue-router";
 
 const route = useRoute();
+const isMobileNavOpen = ref(false);
+
+watch(
+  () => route.path,
+  () => {
+    isMobileNavOpen.value = false;
+  },
+);
+
+function toggleMobileNav(): void {
+  isMobileNavOpen.value = !isMobileNavOpen.value;
+}
 </script>
 
 <template>
@@ -14,7 +27,25 @@ const route = useRoute();
         </span>
       </RouterLink>
 
-      <nav class="app-shell__nav" aria-label="Navigazione principale">
+      <button
+        class="app-shell__menu-toggle"
+        type="button"
+        aria-label="Apri menu di navigazione"
+        aria-controls="app-shell-nav"
+        :aria-expanded="isMobileNavOpen"
+        @click="toggleMobileNav"
+      >
+        <span class="app-shell__menu-line" />
+        <span class="app-shell__menu-line" />
+        <span class="app-shell__menu-line" />
+      </button>
+
+      <nav
+        id="app-shell-nav"
+        class="app-shell__nav"
+        :class="{ 'app-shell__nav--open': isMobileNavOpen }"
+        aria-label="Navigazione principale"
+      >
         <RouterLink
           class="app-shell__nav-link"
           :class="{ 'app-shell__nav-link--active': route.path === '/' }"
@@ -24,8 +55,8 @@ const route = useRoute();
         </RouterLink>
         <RouterLink
           class="app-shell__nav-link"
-          :class="{ 'app-shell__nav-link--active': route.path.startsWith('/members') }"
-          to="/members"
+          :class="{ 'app-shell__nav-link--active': route.path.startsWith('/member') }"
+          to="/member"
         >
           Membri
         </RouterLink>
@@ -85,6 +116,28 @@ const route = useRoute();
   gap: 0.75rem;
 }
 
+.app-shell__menu-toggle {
+  display: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.24rem;
+}
+
+.app-shell__menu-line {
+  display: inline-flex;
+  width: 1.05rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--color-brand-navy);
+}
+
 .app-shell__nav-link {
   border-radius: 999px;
   padding: 0.7rem 1rem;
@@ -98,17 +151,41 @@ const route = useRoute();
 
 @media (max-width: 720px) {
   .app-shell__header {
-    flex-direction: column;
-    align-items: flex-start;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .app-shell__menu-toggle {
+    display: inline-flex;
   }
 
   .app-shell__nav {
-    width: 100%;
+    display: none;
+    position: absolute;
+    top: calc(100% - 0.25rem);
+    right: clamp(1rem, 2vw, 2rem);
+    width: min(13rem, calc(100vw - 2rem));
+    padding: 0.45rem;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(10px);
+    z-index: 12;
+    gap: 0.35rem;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-shell__nav--open {
+    display: inline-flex;
   }
 
   .app-shell__nav-link {
-    flex: 1;
-    text-align: center;
+    text-align: left;
+    border-radius: 12px;
+    padding: 0.6rem 0.7rem;
   }
 }
 </style>

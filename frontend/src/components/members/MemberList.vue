@@ -16,10 +16,7 @@ const emit = defineEmits<{
 <template>
   <section class="member-list section-card">
     <div class="member-list__header">
-      <div>
-        <span class="eyebrow">Archivio</span>
-        <h2 class="member-list__title">Membri</h2>
-      </div>
+      <span class="eyebrow">Archivio</span>
     </div>
 
     <p v-if="isLoading" class="member-list__status">Caricamento elenco in corso...</p>
@@ -48,21 +45,15 @@ const emit = defineEmits<{
 <style scoped>
 .member-list {
   display: grid;
-  gap: 1.5rem;
-  padding: 1.5rem;
+  gap: var(--space-4);
+  padding: var(--space-4);
 }
 
 .member-list__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-}
-
-.member-list__title {
-  margin: 0.35rem 0 0;
-  font-family: var(--font-display);
-  font-size: 2rem;
+  gap: var(--space-3);
 }
 
 .member-list__status {
@@ -73,7 +64,7 @@ const emit = defineEmits<{
 
 .member-list__items {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -85,9 +76,9 @@ const emit = defineEmits<{
   gap: 0.25rem;
   text-align: left;
   border: 1px solid var(--color-border);
-  border-radius: 22px;
+  border-radius: var(--radius-card-compact);
   background: rgba(255, 255, 255, 0.86);
-  padding: 1rem;
+  padding: var(--space-3);
   cursor: pointer;
 }
 
@@ -110,9 +101,32 @@ const emit = defineEmits<{
 }
 
 @media (max-width: 720px) {
+  .member-list {
+    gap: 0.95rem;
+    padding: var(--space-3);
+  }
+
   .member-list__header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .member-list__status {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .member-list__items {
+    gap: 0.55rem;
+  }
+
+  .member-list__item {
+    border-radius: var(--radius-card-mobile);
+    padding: 0.78rem;
+  }
+
+  .member-list__item-meta {
+    font-size: 0.8rem;
   }
 }
 </style>

@@ -1,4 +1,4 @@
-from pathlib import Path
+from src.config import settings
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+DATA_DIR = settings.DATA_DIR
 DATA_FILE = DATA_DIR / "members.json"

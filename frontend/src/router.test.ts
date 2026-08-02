@@ -3,14 +3,34 @@ import { describe, expect, it } from "vitest";
 import { createTestRouter } from "./router";
 
 describe("router", () => {
-  it("resolves the members workspace route", async () => {
+  it("resolves the member workspace route", async () => {
     const router = createTestRouter("/");
     await router.isReady();
 
-    await router.push("/members");
+    await router.push("/member");
 
-    expect(router.currentRoute.value.name).toBe("members");
-    expect(router.currentRoute.value.path).toBe("/members");
+    expect(router.currentRoute.value.name).toBe("member");
+    expect(router.currentRoute.value.path).toBe("/member");
+  });
+
+  it("resolves a selected member path", async () => {
+    const router = createTestRouter("/");
+    await router.isReady();
+
+    await router.push("/member/4ed7f2a8-57ff-4f09-85a7-d2eca249fb48");
+
+    expect(router.currentRoute.value.name).toBe("member");
+    expect(router.currentRoute.value.path).toBe("/member/4ed7f2a8-57ff-4f09-85a7-d2eca249fb48");
+  });
+
+  it("redirects legacy plural members path to the canonical singular path", async () => {
+    const router = createTestRouter("/");
+    await router.isReady();
+
+    await router.push("/members/4ed7f2a8-57ff-4f09-85a7-d2eca249fb48");
+
+    expect(router.currentRoute.value.name).toBe("member");
+    expect(router.currentRoute.value.path).toBe("/member/4ed7f2a8-57ff-4f09-85a7-d2eca249fb48");
   });
 
   it("redirects unknown routes back to home", async () => {

@@ -9,6 +9,7 @@ services:
       - ./data:/app/data
     environment:
       ENVIRONMENT: local
+      DATA_DIR: /app/data
     develop:
       watch:
         - action: rebuild
