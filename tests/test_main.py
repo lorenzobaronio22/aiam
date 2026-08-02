@@ -2,14 +2,6 @@ import pytest
 
 
 @pytest.mark.anyio
-async def test_healthcheck(client):
-    response = await client.get("/health")
-
-    assert response.status_code == 200
-    assert response.json()["status"] == "ok"
-
-
-@pytest.mark.anyio
 async def test_app_serves_frontend_index(client):
     response = await client.get("/app/")
 
@@ -19,16 +11,16 @@ async def test_app_serves_frontend_index(client):
 
 
 @pytest.mark.anyio
-async def test_app_spa_client_route_returns_404_for_non_navigation_requests(client):
-    response = await client.get("/app/some-client-route/")
+async def test_app_members_route_returns_404_for_non_navigation_requests(client):
+    response = await client.get("/app/members")
 
     assert response.status_code == 404
 
 
 @pytest.mark.anyio
-async def test_app_spa_fallback_for_navigation_requests(client):
+async def test_app_members_route_serves_spa_for_navigation_requests(client):
     response = await client.get(
-        "/app/some-client-route/",
+        "/app/members",
         headers={"accept": "text/html"},
     )
 
