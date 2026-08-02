@@ -1,15 +1,19 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 const model = defineModel<{
   name: string;
   email: string;
 }>({ required: true });
 
-defineProps<{
+const props = defineProps<{
   mode: "create" | "edit";
   isLoadingDetail: boolean;
   isSaving: boolean;
   isDeleting: boolean;
 }>();
+
+const isBusy = computed(() => props.isLoadingDetail || props.isSaving || props.isDeleting);
 
 const emit = defineEmits<{
   delete: [];
@@ -25,9 +29,9 @@ const emit = defineEmits<{
         <span class="eyebrow">Scheda membro</span>
       </div>
       <button
-        v-if="mode === 'edit'"
+        v-if="props.mode === 'edit'"
         class="button-secondary member-form__icon-button"
-        :disabled="isLoadingDetail || isSaving || isDeleting"
+        :disabled="isBusy"
         :aria-label="'Nuovo membro'"
         type="button"
         @click="emit('unload')"
@@ -39,7 +43,7 @@ const emit = defineEmits<{
       </button>
     </div>
 
-    <p v-if="isLoadingDetail" class="member-form__status">Caricamento scheda membro...</p>
+    <p v-if="props.isLoadingDetail" class="member-form__status">Caricamento scheda membro...</p>
 
     <form class="member-form__body" @submit.prevent="emit('submit')">
       <label class="member-form__field">
@@ -53,7 +57,7 @@ const emit = defineEmits<{
           </span>
           <input
             v-model="model.name"
-            :disabled="isLoadingDetail || isSaving || isDeleting"
+            :disabled="isBusy"
             autocomplete="name"
             name="name"
             placeholder="Es. Giulia Rossi"
@@ -74,7 +78,7 @@ const emit = defineEmits<{
           </span>
           <input
             v-model="model.email"
-            :disabled="isLoadingDetail || isSaving || isDeleting"
+            :disabled="isBusy"
             autocomplete="email"
             name="email"
             placeholder="nome@azienda.it"
@@ -87,8 +91,8 @@ const emit = defineEmits<{
       <div class="member-form__actions">
         <button
           class="button-primary member-form__icon-button"
-          :disabled="isLoadingDetail || isSaving || isDeleting"
-          :aria-label="mode === 'create' ? 'Crea membro' : 'Salva modifiche'"
+          :disabled="isBusy"
+          :aria-label="props.mode === 'create' ? 'Crea membro' : 'Salva modifiche'"
           type="submit"
         >
           <svg class="member-form__icon member-form__icon--mobile" viewBox="0 0 24 24" aria-hidden="true">
@@ -97,13 +101,13 @@ const emit = defineEmits<{
             <path d="M9 16h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
           <span class="member-form__text-label">
-            {{ isSaving ? "Salvataggio..." : mode === "create" ? "Crea membro" : "Salva modifiche" }}
+            {{ props.isSaving ? "Salvataggio..." : props.mode === "create" ? "Crea membro" : "Salva modifiche" }}
           </span>
         </button>
         <button
-          v-if="mode === 'edit'"
+          v-if="props.mode === 'edit'"
           class="button-danger member-form__icon-button"
-          :disabled="isSaving || isLoadingDetail || isDeleting"
+          :disabled="isBusy"
           :aria-label="'Elimina membro'"
           type="button"
           @click="emit('delete')"
@@ -114,7 +118,7 @@ const emit = defineEmits<{
             <path d="M8 7l1 12h6l1-12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
           </svg>
           <span class="member-form__text-label">
-            {{ isDeleting ? "Eliminazione..." : "Elimina membro" }}
+            {{ props.isDeleting ? "Eliminazione..." : "Elimina membro" }}
           </span>
         </button>
       </div>
@@ -125,15 +129,15 @@ const emit = defineEmits<{
 <style scoped>
 .member-form {
   display: grid;
-  gap: 1.5rem;
-  padding: 1.5rem;
+  gap: var(--space-4);
+  padding: var(--space-4);
 }
 
 .member-form__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-3);
 }
 
 .member-form__status {
@@ -156,7 +160,7 @@ const emit = defineEmits<{
 
 .member-form__body {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-3);
 }
 
 .member-form__field {
@@ -182,7 +186,7 @@ const emit = defineEmits<{
 
 .member-form__field input {
   border: 1px solid var(--color-border);
-  border-radius: 18px;
+  border-radius: var(--radius-control);
   background: rgba(255, 255, 255, 0.9);
   padding: 0.95rem 1rem;
   color: var(--color-brand-navy);
@@ -191,14 +195,14 @@ const emit = defineEmits<{
 .member-form__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  padding-top: 0.5rem;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
 }
 
 @media (max-width: 720px) {
   .member-form {
     gap: 0.9rem;
-    padding: 1rem;
+    padding: var(--space-3);
   }
 
   .member-form__header {
@@ -225,7 +229,7 @@ const emit = defineEmits<{
     justify-content: center;
     align-items: center;
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: rgba(255, 255, 255, 0.75);
   }
 
@@ -260,7 +264,7 @@ const emit = defineEmits<{
     min-width: 2.5rem;
     height: 2.5rem;
     padding: 0;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
   }
 
   .member-form__icon-button {
@@ -279,7 +283,7 @@ const emit = defineEmits<{
   }
 
   .member-form__field input {
-    border-radius: 14px;
+    border-radius: var(--radius-control-mobile);
     padding: 0.72rem 0.78rem;
     font-size: 0.95rem;
   }

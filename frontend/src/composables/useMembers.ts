@@ -45,17 +45,25 @@ function toMessage(error: unknown, fallback: string): string {
 
 export function useMembers() {
   const members = ref<Member[]>([]);
-  const selectedId = shallowRef<string | null>(null);
   const selectedMember = ref<Member | null>(null);
-  const isLoadingList = shallowRef(false);
-  const isLoadingDetail = shallowRef(false);
-  const isSaving = shallowRef(false);
-  const isDeleting = shallowRef(false);
+  const asyncState = ref({
+    loadingList: false,
+    loadingDetail: false,
+    saving: false,
+    deleting: false,
+  });
   const errorMessage = shallowRef("");
   const successMessage = shallowRef("");
 
-  const isCreateMode = computed(() => selectedId.value === null);
   const orderedMembers = computed(() => sortMembers(members.value));
+  const isLoadingList = computed(() => asyncState.value.loadingList);
+  const isLoadingDetail = computed(() => asyncState.value.loadingDetail);
+  const isSaving = computed(() => asyncState.value.saving);
+  const isDeleting = computed(() => asyncState.value.deleting);
+
+  function setAsyncState(key: keyof typeof asyncState.value, value: boolean): void {
+    asyncState.value[key] = value;
+  }
 
   function clearFeedback(): void {
     errorMessage.value = "";
@@ -76,35 +84,30 @@ export function useMembers() {
   }
 
   function resetSelection(): void {
-    selectedId.value = null;
     selectedMember.value = null;
   }
 
   async function loadMembers(): Promise<void> {
-    isLoadingList.value = true;
+    setAsyncState("loadingList", true);
     errorMessage.value = "";
 
     try {
       members.value = sortMembers(await listMembersRequest());
-
-      if (selectedId.value && !members.value.some((member) => member.id === selectedId.value)) {
-        resetSelection();
-      }
     } catch (error) {
       errorMessage.value = toMessage(error, "Non e stato possibile caricare i membri.");
     } finally {
-      isLoadingList.value = false;
+      setAsyncState("loadingList", false);
     }
   }
 
-  async function selectMember(memberId: string): Promise<void> {
+  async function loadMember(memberId: string): Promise<boolean> {
     clearFeedback();
-    selectedId.value = memberId;
     selectedMember.value = null;
-    isLoadingDetail.value = true;
+    setAsyncState("loadingDetail", true);
 
     try {
       selectedMember.value = await getMemberRequest(memberId);
+      return true;
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) {
         members.value = members.value.filter((member) => member.id !== memberId);
@@ -112,78 +115,74 @@ export function useMembers() {
       }
 
       errorMessage.value = toMessage(error, "Non e stato possibile aprire la scheda membro.");
+      return false;
     } finally {
-      isLoadingDetail.value = false;
+      setAsyncState("loadingDetail", false);
     }
   }
 
-  function startCreate(): void {
+  function clearSelection(): void {
     clearFeedback();
     resetSelection();
   }
 
-  async function createMember(input: MemberInput): Promise<void> {
+  async function createMember(input: MemberInput): Promise<Member | null> {
     clearFeedback();
-    isSaving.value = true;
+    setAsyncState("saving", true);
 
     try {
       const created = await createMemberRequest(normalizeInput(input));
       upsertMember(created);
-      selectedId.value = created.id;
       selectedMember.value = created;
       successMessage.value = "Nuovo membro salvato correttamente.";
+      return created;
     } catch (error) {
       errorMessage.value = toMessage(error, "Non e stato possibile creare il membro.");
+      return null;
     } finally {
-      isSaving.value = false;
+      setAsyncState("saving", false);
     }
   }
 
-  async function updateMember(input: MemberInput): Promise<void> {
-    if (!selectedId.value) {
-      return;
-    }
-
+  async function updateMember(memberId: string, input: MemberInput): Promise<Member | null> {
     clearFeedback();
-    isSaving.value = true;
+    setAsyncState("saving", true);
 
     try {
-      const updated = await updateMemberRequest(selectedId.value, normalizeInput(input));
+      const updated = await updateMemberRequest(memberId, normalizeInput(input));
       upsertMember(updated);
       selectedMember.value = updated;
       successMessage.value = "Modifiche salvate con successo.";
+      return updated;
     } catch (error) {
       errorMessage.value = toMessage(error, "Non e stato possibile aggiornare il membro.");
+      return null;
     } finally {
-      isSaving.value = false;
+      setAsyncState("saving", false);
     }
   }
 
-  async function deleteSelectedMember(): Promise<void> {
-    if (!selectedId.value) {
-      return;
-    }
-
+  async function deleteMember(memberId: string): Promise<boolean> {
     clearFeedback();
-    isDeleting.value = true;
+    setAsyncState("deleting", true);
 
     try {
-      await deleteMemberRequest(selectedId.value);
-      members.value = members.value.filter((member) => member.id !== selectedId.value);
+      await deleteMemberRequest(memberId);
+      members.value = members.value.filter((member) => member.id !== memberId);
       resetSelection();
       successMessage.value = "Membro eliminato correttamente.";
+      return true;
     } catch (error) {
       errorMessage.value = toMessage(error, "Non e stato possibile eliminare il membro.");
+      return false;
     } finally {
-      isDeleting.value = false;
+      setAsyncState("deleting", false);
     }
   }
 
   return {
     members: readonly(orderedMembers),
-    selectedId: readonly(selectedId),
     selectedMember: readonly(selectedMember),
-    isCreateMode,
     isLoadingList: readonly(isLoadingList),
     isLoadingDetail: readonly(isLoadingDetail),
     isSaving: readonly(isSaving),
@@ -191,11 +190,11 @@ export function useMembers() {
     errorMessage: readonly(errorMessage),
     successMessage: readonly(successMessage),
     clearFeedback,
+    clearSelection,
     createMember,
-    deleteSelectedMember,
+    deleteMember,
+    loadMember,
     loadMembers,
-    selectMember,
-    startCreate,
     updateMember,
   };
 }

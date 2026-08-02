@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import MembersPage from "./MembersPage.vue";
 import { createTestRouter } from "../router";
+import { buildMember, buildMemberList } from "../test/factories/members";
 
 const membersApiMocks = vi.hoisted(() => {
   class ApiError extends Error {
@@ -70,29 +71,14 @@ describe("MembersPage", () => {
   });
 
   it("loads members, opens a selected profile, and updates it", async () => {
-    membersApiMocks.listMembers.mockResolvedValue([
-      {
-        id: "member-1",
-        name: "Giulia Rossi",
-        email: "giulia@example.com",
-        createdAt: "2026-08-02T08:00:00Z",
-        updatedAt: "2026-08-02T08:00:00Z",
-      },
-    ]);
-    membersApiMocks.getMember.mockResolvedValue({
-      id: "member-1",
-      name: "Giulia Rossi",
-      email: "giulia@example.com",
-      createdAt: "2026-08-02T08:00:00Z",
-      updatedAt: "2026-08-02T08:00:00Z",
-    });
-    membersApiMocks.updateMember.mockResolvedValue({
-      id: "member-1",
-      name: "Giulia Bianchi",
-      email: "giulia@example.com",
-      createdAt: "2026-08-02T08:00:00Z",
-      updatedAt: "2026-08-02T09:00:00Z",
-    });
+    membersApiMocks.listMembers.mockResolvedValue(buildMemberList());
+    membersApiMocks.getMember.mockResolvedValue(buildMember());
+    membersApiMocks.updateMember.mockResolvedValue(
+      buildMember({
+        name: "Giulia Bianchi",
+        updatedAt: "2026-08-02T09:00:00Z",
+      }),
+    );
 
     const { wrapper, router } = await factory();
     await flushPromises();
@@ -122,13 +108,13 @@ describe("MembersPage", () => {
 
   it("creates a member and supports deletion from the edit state", async () => {
     membersApiMocks.listMembers.mockResolvedValue([]);
-    membersApiMocks.createMember.mockResolvedValue({
-      id: "member-2",
-      name: "Laura Neri",
-      email: "laura@example.com",
-      createdAt: "2026-08-02T08:00:00Z",
-      updatedAt: "2026-08-02T08:00:00Z",
-    });
+    membersApiMocks.createMember.mockResolvedValue(
+      buildMember({
+        id: "member-2",
+        name: "Laura Neri",
+        email: "laura@example.com",
+      }),
+    );
     membersApiMocks.deleteMember.mockResolvedValue(undefined);
 
     const { wrapper, router } = await factory();
@@ -173,22 +159,20 @@ describe("MembersPage", () => {
   });
 
   it("loads a member directly from route param", async () => {
-    membersApiMocks.listMembers.mockResolvedValue([
-      {
+    membersApiMocks.listMembers.mockResolvedValue(
+      buildMemberList({
         id: "member-3",
         name: "Anna Verdi",
         email: "anna@example.com",
-        createdAt: "2026-08-02T08:00:00Z",
-        updatedAt: "2026-08-02T08:00:00Z",
-      },
-    ]);
-    membersApiMocks.getMember.mockResolvedValue({
-      id: "member-3",
-      name: "Anna Verdi",
-      email: "anna@example.com",
-      createdAt: "2026-08-02T08:00:00Z",
-      updatedAt: "2026-08-02T08:00:00Z",
-    });
+      }),
+    );
+    membersApiMocks.getMember.mockResolvedValue(
+      buildMember({
+        id: "member-3",
+        name: "Anna Verdi",
+        email: "anna@example.com",
+      }),
+    );
 
     const { router, wrapper } = await factory("/member/member-3");
     await flushPromises();

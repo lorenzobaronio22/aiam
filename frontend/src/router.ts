@@ -9,27 +9,34 @@ import {
 import LandingPage from "./pages/LandingPage.vue";
 import MembersPage from "./pages/MembersPage.vue";
 
+const HOME_PATH = "/";
+const MEMBER_PATH = "/member";
+const LEGACY_MEMBERS_PATH = "/members/:memberId?";
+
+function toMemberPath(memberId: unknown): string {
+  return typeof memberId === "string" && memberId.length > 0
+    ? `${MEMBER_PATH}/${memberId}`
+    : MEMBER_PATH;
+}
+
 export const routes: RouteRecordRaw[] = [
   {
-    path: "/",
+    path: HOME_PATH,
     name: "home",
     component: LandingPage,
   },
   {
-    path: "/member/:memberId?",
+    path: `${MEMBER_PATH}/:memberId?`,
     name: "member",
     component: MembersPage,
   },
   {
-    path: "/members/:memberId?",
-    redirect: (to) => {
-      const memberId = typeof to.params.memberId === "string" ? to.params.memberId : "";
-      return memberId ? `/member/${memberId}` : "/member";
-    },
+    path: LEGACY_MEMBERS_PATH,
+    redirect: (to) => toMemberPath(to.params.memberId),
   },
   {
     path: "/:pathMatch(.*)*",
-    redirect: "/",
+    redirect: HOME_PATH,
   },
 ];
 

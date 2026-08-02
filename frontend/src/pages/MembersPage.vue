@@ -1,176 +1,23 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
-
 import MemberForm from "../components/members/MemberForm.vue";
 import MemberList from "../components/members/MemberList.vue";
-import { useMembers } from "../composables/useMembers";
-
-const memberDraft = ref({
-  name: "",
-  email: "",
-});
+import { useMembersPageController } from "../composables/useMembersPageController";
 
 const {
-  clearFeedback,
-  createMember,
-  deleteSelectedMember,
-  errorMessage,
-  isCreateMode,
+  handleDelete,
+  handleSelect,
+  handleSubmit,
+  handleUnloadSelection,
   isDeleting,
   isLoadingDetail,
   isLoadingList,
   isSaving,
-  loadMembers,
+  memberDraft,
   members,
-  selectMember,
+  pageMode,
   selectedId,
-  selectedMember,
-  startCreate,
-  successMessage,
-  updateMember,
-} = useMembers();
-
-type ToastTone = "success" | "error";
-
-type ToastMessage = {
-  id: number;
-  message: string;
-  tone: ToastTone;
-};
-
-const toasts = ref<ToastMessage[]>([]);
-let toastTimer: ReturnType<typeof setTimeout> | null = null;
-
-const route = useRoute();
-const router = useRouter();
-
-const routeMemberId = computed(() => {
-  const memberId = route.params.memberId;
-  return typeof memberId === "string" && memberId.length > 0 ? memberId : null;
-});
-
-const pageMode = computed(() => (isCreateMode.value ? "create" : "edit"));
-
-function showToast(message: string, tone: ToastTone): void {
-  toasts.value = [
-    {
-      id: Date.now(),
-      message,
-      tone,
-    },
-  ];
-
-  if (toastTimer) {
-    clearTimeout(toastTimer);
-  }
-
-  toastTimer = setTimeout(() => {
-    toasts.value = [];
-    clearFeedback();
-    toastTimer = null;
-  }, 3200);
-}
-
-watch(successMessage, (message) => {
-  if (!message) {
-    return;
-  }
-
-  showToast(message, "success");
-});
-
-watch(errorMessage, (message) => {
-  if (!message) {
-    return;
-  }
-
-  showToast(message, "error");
-});
-
-onBeforeUnmount(() => {
-  if (!toastTimer) {
-    return;
-  }
-
-  clearTimeout(toastTimer);
-});
-
-watch(
-  selectedMember,
-  (member) => {
-    memberDraft.value = {
-      name: member?.name ?? "",
-      email: member?.email ?? "",
-    };
-  },
-  { immediate: true },
-);
-
-onMounted(() => {
-  void loadMembers();
-});
-
-watch(
-  routeMemberId,
-  async (memberId) => {
-    if (!memberId) {
-      startCreate();
-      return;
-    }
-
-    if (selectedId.value === memberId && selectedMember.value) {
-      return;
-    }
-
-    await selectMember(memberId);
-
-    if (selectedId.value === null) {
-      await router.replace({ name: "member" });
-    }
-  },
-  { immediate: true },
-);
-
-async function handleSelect(memberId: string): Promise<void> {
-  if (routeMemberId.value === memberId) {
-    await selectMember(memberId);
-    return;
-  }
-
-  await router.push({ name: "member", params: { memberId } });
-}
-
-async function handleUnloadSelection(): Promise<void> {
-  if (routeMemberId.value === null) {
-    startCreate();
-    return;
-  }
-
-  await router.push({ name: "member" });
-}
-
-async function handleSubmit(): Promise<void> {
-  if (pageMode.value === "create") {
-    await createMember(memberDraft.value);
-
-    if (selectedId.value) {
-      await router.replace({ name: "member", params: { memberId: selectedId.value } });
-    }
-
-    return;
-  }
-
-  await updateMember(memberDraft.value);
-}
-
-async function handleDelete(): Promise<void> {
-  await deleteSelectedMember();
-
-  if (selectedId.value === null && routeMemberId.value !== null) {
-    await router.replace({ name: "member" });
-  }
-}
+  toasts,
+} = useMembersPageController();
 </script>
 
 <template>
@@ -224,13 +71,13 @@ async function handleDelete(): Promise<void> {
 <style scoped>
 .members-page {
   display: grid;
-  gap: 1.5rem;
+  gap: var(--space-4);
   padding: 2rem 0 4rem;
 }
 
 .members-page__hero {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-3);
   padding: clamp(1.5rem, 4vw, 2.5rem);
 }
 
@@ -268,7 +115,7 @@ async function handleDelete(): Promise<void> {
 
 .members-page__hero-copy {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-2);
 }
 
 .members-page__title {
@@ -287,13 +134,13 @@ async function handleDelete(): Promise<void> {
 .members-page__grid {
   display: grid;
   grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr);
-  gap: 1.25rem;
+  gap: calc(var(--space-3) + 0.25rem);
   align-items: start;
 }
 
 .members-page__panel {
   display: grid;
-  gap: 1.25rem;
+  gap: calc(var(--space-3) + 0.25rem);
   position: sticky;
   top: 0.9rem;
   align-self: start;

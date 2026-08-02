@@ -23,6 +23,16 @@ describe("router", () => {
     expect(router.currentRoute.value.path).toBe("/member/4ed7f2a8-57ff-4f09-85a7-d2eca249fb48");
   });
 
+  it("redirects legacy plural members path to the canonical singular path", async () => {
+    const router = createTestRouter("/");
+    await router.isReady();
+
+    await router.push("/members/4ed7f2a8-57ff-4f09-85a7-d2eca249fb48");
+
+    expect(router.currentRoute.value.name).toBe("member");
+    expect(router.currentRoute.value.path).toBe("/member/4ed7f2a8-57ff-4f09-85a7-d2eca249fb48");
+  });
+
   it("redirects unknown routes back to home", async () => {
     const router = createTestRouter("/percorso-sconosciuto");
     await router.isReady();
