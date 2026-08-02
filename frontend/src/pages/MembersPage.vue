@@ -15,7 +15,6 @@ const {
   createMember,
   deleteSelectedMember,
   errorMessage,
-  hasMembers,
   isCreateMode,
   isDeleting,
   isLoadingDetail,
@@ -151,13 +150,6 @@ async function handleDelete(): Promise<void> {
           @submit="handleSubmit"
           @unload="handleUnloadSelection"
         />
-
-        <section v-if="!hasMembers && !isLoadingList" class="members-page__hint section-card">
-          <span class="eyebrow">Primo passo</span>
-          <p class="members-page__hint-copy">
-            L'archivio e vuoto: crea il primo membro per iniziare a costruire la base dati.
-          </p>
-        </section>
       </div>
     </div>
   </main>
@@ -204,18 +196,6 @@ async function handleDelete(): Promise<void> {
 .members-page__panel {
   display: grid;
   gap: 1.25rem;
-}
-
-.members-page__hint {
-  display: grid;
-  gap: 0.8rem;
-  padding: 1.5rem;
-}
-
-.members-page__hint-copy {
-  margin: 0;
-  color: var(--color-muted);
-  line-height: 1.6;
 }
 
 @media (max-width: 960px) {

@@ -54,7 +54,6 @@ export function useMembers() {
   const errorMessage = shallowRef("");
   const successMessage = shallowRef("");
 
-  const hasMembers = computed(() => members.value.length > 0);
   const isCreateMode = computed(() => selectedId.value === null);
   const orderedMembers = computed(() => sortMembers(members.value));
 
@@ -184,7 +183,6 @@ export function useMembers() {
     members: readonly(orderedMembers),
     selectedId: readonly(selectedId),
     selectedMember: readonly(selectedMember),
-    hasMembers,
     isCreateMode,
     isLoadingList: readonly(isLoadingList),
     isLoadingDetail: readonly(isLoadingDetail),

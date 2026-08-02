@@ -64,7 +64,6 @@ describe("MembersPage", () => {
     await flushPromises();
 
     expect(membersApiMocks.listMembers).toHaveBeenCalledTimes(1);
-    expect(wrapper.text()).toContain("L'archivio e vuoto");
     expect(wrapper.text()).toContain("Crea membro");
     expect(wrapper.findAll('button[type="button"]')).toHaveLength(0);
     expect(router.currentRoute.value.path).toBe("/member");
