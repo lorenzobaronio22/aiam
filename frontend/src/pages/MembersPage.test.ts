@@ -1,9 +1,13 @@
-import { mount, flushPromises } from "@vue/test-utils";
+import { DOMWrapper, mount, flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import MembersPage from "./MembersPage.vue";
 import { createTestRouter } from "../router";
 import { buildMember, buildMemberList } from "../test/factories/members";
+
+function bodyWrapper(): DOMWrapper<HTMLElement> {
+  return new DOMWrapper(document.body);
+}
 
 const membersApiMocks = vi.hoisted(() => {
   class ApiError extends Error {
@@ -58,19 +62,20 @@ describe("MembersPage", () => {
     membersApiMocks.deleteMember.mockReset();
   });
 
-  it("renders the empty state after loading an empty archive", async () => {
+  it("renders the empty state and the create action when the archive is empty", async () => {
     membersApiMocks.listMembers.mockResolvedValue([]);
 
     const { wrapper, router } = await factory();
     await flushPromises();
 
     expect(membersApiMocks.listMembers).toHaveBeenCalledTimes(1);
-    expect(wrapper.text()).toContain("Crea membro");
-    expect(wrapper.findAll('button[type="button"]')).toHaveLength(0);
+    expect(wrapper.text()).toContain("Nessun membro presente.");
+    expect(wrapper.find(".member-card__summary").exists()).toBe(false);
+    expect(wrapper.find(".members-page__fab").exists()).toBe(true);
     expect(router.currentRoute.value.path).toBe("/member");
   });
 
-  it("loads members, opens a selected profile, and updates it", async () => {
+  it("expands a member card, updates it, and collapses back to browsing", async () => {
     membersApiMocks.listMembers.mockResolvedValue(buildMemberList());
     membersApiMocks.getMember.mockResolvedValue(buildMember());
     membersApiMocks.updateMember.mockResolvedValue(
@@ -83,11 +88,12 @@ describe("MembersPage", () => {
     const { wrapper, router } = await factory();
     await flushPromises();
 
-    await wrapper.get(".member-list__item").trigger("click");
+    await wrapper.get(".member-card__summary").trigger("click");
     await flushPromises();
 
     expect(membersApiMocks.getMember).toHaveBeenCalledWith("member-1");
     expect(router.currentRoute.value.path).toBe("/member/member-1");
+    expect(wrapper.find(".member-form__delete").exists()).toBe(true);
 
     await wrapper.get('input[name="name"]').setValue("Giulia Bianchi");
     await wrapper.get("form").trigger("submit");
@@ -97,16 +103,49 @@ describe("MembersPage", () => {
       name: "Giulia Bianchi",
       email: "giulia@example.com",
     });
-    expect(wrapper.text()).toContain("Modifiche salvate con successo.");
-
-    await wrapper.get(".button-secondary").trigger("click");
-    await flushPromises();
-
+    expect(bodyWrapper().text()).toContain("Modifiche salvate con successo.");
     expect(router.currentRoute.value.path).toBe("/member");
-    expect(wrapper.find(".button-danger").exists()).toBe(false);
+    expect(wrapper.find(".member-form__delete").exists()).toBe(false);
   });
 
-  it("creates a member and supports deletion from the edit state", async () => {
+  it("toggles a member card closed when selecting it again", async () => {
+    membersApiMocks.listMembers.mockResolvedValue(buildMemberList());
+    membersApiMocks.getMember.mockResolvedValue(buildMember());
+
+    const { wrapper, router } = await factory();
+    await flushPromises();
+
+    await wrapper.get(".member-card__summary").trigger("click");
+    await flushPromises();
+    expect(router.currentRoute.value.path).toBe("/member/member-1");
+
+    await wrapper.get(".member-card__summary").trigger("click");
+    await flushPromises();
+    expect(router.currentRoute.value.path).toBe("/member");
+    expect(wrapper.find(".member-form__delete").exists()).toBe(false);
+  });
+
+  it("requires a second click on delete to confirm, then removes the member", async () => {
+    membersApiMocks.listMembers.mockResolvedValue(buildMemberList());
+    membersApiMocks.getMember.mockResolvedValue(buildMember());
+    membersApiMocks.deleteMember.mockResolvedValue(undefined);
+
+    const { wrapper, router } = await factory("/member/member-1");
+    await flushPromises();
+
+    await wrapper.get(".member-form__delete").trigger("click");
+    expect(membersApiMocks.deleteMember).not.toHaveBeenCalled();
+    expect(wrapper.get(".member-form__delete").text()).toContain("Conferma eliminazione");
+
+    await wrapper.get(".member-form__delete").trigger("click");
+    await flushPromises();
+
+    expect(membersApiMocks.deleteMember).toHaveBeenCalledWith("member-1");
+    expect(bodyWrapper().text()).toContain("Membro eliminato correttamente.");
+    expect(router.currentRoute.value.path).toBe("/member");
+  });
+
+  it("creates a member from the floating action button and closes the sheet", async () => {
     membersApiMocks.listMembers.mockResolvedValue([]);
     membersApiMocks.createMember.mockResolvedValue(
       buildMember({
@@ -115,32 +154,30 @@ describe("MembersPage", () => {
         email: "laura@example.com",
       }),
     );
-    membersApiMocks.deleteMember.mockResolvedValue(undefined);
 
     const { wrapper, router } = await factory();
     await flushPromises();
 
-    await wrapper.get('input[name="name"]').setValue("Laura Neri");
-    await wrapper.get('input[name="email"]').setValue("laura@example.com");
-    await wrapper.get("form").trigger("submit");
+    await wrapper.get(".members-page__fab").trigger("click");
+    await flushPromises();
+    expect(router.currentRoute.value.path).toBe("/member/new");
+    expect(bodyWrapper().find(".members-page__sheet").exists()).toBe(true);
+
+    await bodyWrapper().get('input[name="name"]').setValue("Laura Neri");
+    await bodyWrapper().get('input[name="email"]').setValue("laura@example.com");
+    await bodyWrapper().get(".members-page__sheet form").trigger("submit");
     await flushPromises();
 
     expect(membersApiMocks.createMember).toHaveBeenCalledWith({
       name: "Laura Neri",
       email: "laura@example.com",
     });
-    expect(wrapper.text()).toContain("Nuovo membro salvato correttamente.");
-    expect(router.currentRoute.value.path).toBe("/member/member-2");
-
-    await wrapper.get(".button-danger").trigger("click");
-    await flushPromises();
-
-    expect(membersApiMocks.deleteMember).toHaveBeenCalledWith("member-2");
+    expect(bodyWrapper().text()).toContain("Nuovo membro salvato correttamente.");
     expect(router.currentRoute.value.path).toBe("/member");
-    expect(wrapper.find(".button-danger").exists()).toBe(false);
+    expect(bodyWrapper().find(".members-page__sheet").exists()).toBe(false);
   });
 
-  it("shows the duplicate email error returned by the API", async () => {
+  it("shows the duplicate email error and keeps the create sheet open", async () => {
     membersApiMocks.listMembers.mockResolvedValue([]);
     membersApiMocks.createMember.mockRejectedValue(
       new membersApiMocks.ApiError(409, "Conflict", "duplicate"),
@@ -149,16 +186,20 @@ describe("MembersPage", () => {
     const { wrapper, router } = await factory();
     await flushPromises();
 
-    await wrapper.get('input[name="name"]').setValue("Laura Neri");
-    await wrapper.get('input[name="email"]').setValue("laura@example.com");
-    await wrapper.get("form").trigger("submit");
+    await wrapper.get(".members-page__fab").trigger("click");
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Esiste gia un membro con questa email.");
-    expect(router.currentRoute.value.path).toBe("/member");
+    await bodyWrapper().get('input[name="name"]').setValue("Laura Neri");
+    await bodyWrapper().get('input[name="email"]').setValue("laura@example.com");
+    await bodyWrapper().get(".members-page__sheet form").trigger("submit");
+    await flushPromises();
+
+    expect(bodyWrapper().text()).toContain("Esiste gia un membro con questa email.");
+    expect(router.currentRoute.value.path).toBe("/member/new");
+    expect(bodyWrapper().find(".members-page__sheet").exists()).toBe(true);
   });
 
-  it("loads a member directly from route param", async () => {
+  it("loads a member directly from a route param and shows it expanded", async () => {
     membersApiMocks.listMembers.mockResolvedValue(
       buildMemberList({
         id: "member-3",
