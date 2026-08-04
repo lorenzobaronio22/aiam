@@ -26,6 +26,11 @@ export const routes: RouteRecordRaw[] = [
     component: LandingPage,
   },
   {
+    path: `${MEMBER_PATH}/new`,
+    name: "member-new",
+    component: MembersPage,
+  },
+  {
     path: `${MEMBER_PATH}/:memberId?`,
     name: "member",
     component: MembersPage,

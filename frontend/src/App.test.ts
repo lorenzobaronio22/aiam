@@ -5,7 +5,7 @@ import App from "./App.vue";
 import { createTestRouter } from "./router";
 
 describe("App", () => {
-  it("toggles mobile navigation menu", async () => {
+  it("renders always-visible navigation links", async () => {
     const router = createTestRouter("/");
     await router.isReady();
 
@@ -18,10 +18,14 @@ describe("App", () => {
       },
     });
 
-    expect(wrapper.find(".app-shell__nav").classes()).not.toContain("app-shell__nav--open");
+    expect(wrapper.find(".app-shell__nav").exists()).toBe(true);
+    expect(wrapper.text()).toContain("Home");
+    expect(wrapper.text()).toContain("Membri");
+    expect(wrapper.find(".app-shell__nav-link--active").text()).toContain("Home");
 
-    await wrapper.get(".app-shell__menu-toggle").trigger("click");
+    await router.push("/member");
+    await wrapper.vm.$nextTick();
 
-    expect(wrapper.find(".app-shell__nav").classes()).toContain("app-shell__nav--open");
+    expect(wrapper.find(".app-shell__nav-link--active").text()).toContain("Membri");
   });
 });

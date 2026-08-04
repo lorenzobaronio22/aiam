@@ -1,4 +1,4 @@
-import { onBeforeUnmount, ref, toRef, watch, type MaybeRefOrGetter } from "vue";
+import { ref, toRef, watch, type MaybeRefOrGetter } from "vue";
 
 export type ToastTone = "success" | "error";
 
@@ -9,8 +9,7 @@ export type ToastMessage = {
 };
 
 type UseToastMessagesOptions = {
-  autoHideMs?: number;
-  onAutoHide?: () => void;
+  onDismiss?: () => void;
 };
 
 export function useToastMessages(
@@ -19,21 +18,14 @@ export function useToastMessages(
   options?: UseToastMessagesOptions,
 ) {
   const toasts = ref<ToastMessage[]>([]);
-  let toastTimer: ReturnType<typeof setTimeout> | null = null;
-  const autoHideMs = options?.autoHideMs ?? 3200;
 
-  function clearTimer(): void {
-    if (!toastTimer) {
+  function clearToasts(): void {
+    if (toasts.value.length === 0) {
       return;
     }
 
-    clearTimeout(toastTimer);
-    toastTimer = null;
-  }
-
-  function clearToasts(): void {
-    clearTimer();
     toasts.value = [];
+    options?.onDismiss?.();
   }
 
   function showToast(message: string, tone: ToastTone): void {
@@ -44,14 +36,6 @@ export function useToastMessages(
         tone,
       },
     ];
-
-    clearTimer();
-
-    toastTimer = setTimeout(() => {
-      toasts.value = [];
-      options?.onAutoHide?.();
-      toastTimer = null;
-    }, autoHideMs);
   }
 
   watch(toRef(successMessage), (message) => {
@@ -68,10 +52,6 @@ export function useToastMessages(
     }
 
     showToast(message, "error");
-  });
-
-  onBeforeUnmount(() => {
-    clearTimer();
   });
 
   return {

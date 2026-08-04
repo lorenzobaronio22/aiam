@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 
 const model = defineModel<{
   name: string;
@@ -17,280 +17,243 @@ const isBusy = computed(() => props.isLoadingDetail || props.isSaving || props.i
 
 const emit = defineEmits<{
   delete: [];
-  unload: [];
+  cancel: [];
   submit: [];
 }>();
+
+const confirmingDelete = ref(false);
+let confirmTimeout: ReturnType<typeof setTimeout> | undefined;
+
+function onDeleteClick(): void {
+  if (!confirmingDelete.value) {
+    confirmingDelete.value = true;
+    clearTimeout(confirmTimeout);
+    confirmTimeout = setTimeout(() => {
+      confirmingDelete.value = false;
+    }, 4000);
+    return;
+  }
+
+  clearTimeout(confirmTimeout);
+  confirmingDelete.value = false;
+  emit("delete");
+}
+
+watch(
+  () => props.mode,
+  () => {
+    confirmingDelete.value = false;
+  },
+);
 </script>
 
 <template>
-  <section class="member-form section-card">
-    <div class="member-form__header">
-      <div>
-        <span class="eyebrow">Scheda membro</span>
-      </div>
-      <button
-        v-if="props.mode === 'edit'"
-        class="button-secondary member-form__icon-button"
-        :disabled="isBusy"
-        :aria-label="'Nuovo membro'"
-        type="button"
-        @click="emit('unload')"
-      >
-        <svg class="member-form__icon member-form__icon--mobile" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        </svg>
-        <span class="member-form__text-label">Nuovo membro</span>
-      </button>
-    </div>
+  <form class="member-form" @submit.prevent="emit('submit')">
+    <p v-if="props.isLoadingDetail" class="member-form__status">Caricamento scheda in corso...</p>
 
-    <p v-if="props.isLoadingDetail" class="member-form__status">Caricamento scheda membro...</p>
-
-    <form class="member-form__body" @submit.prevent="emit('submit')">
+    <div class="member-form__fields">
       <label class="member-form__field">
         <span class="member-form__field-label">Nome e cognome</span>
-        <div class="member-form__field-row">
-          <span class="member-form__field-icon" aria-hidden="true">
-            <svg class="member-form__icon" viewBox="0 0 24 24">
-              <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2" />
-              <path d="M5 20c1.8-3.1 4-4.6 7-4.6s5.2 1.5 7 4.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            </svg>
-          </span>
-          <input
-            v-model="model.name"
-            :disabled="isBusy"
-            autocomplete="name"
-            name="name"
-            placeholder="Es. Giulia Rossi"
-            required
-            type="text"
-          />
-        </div>
+        <input
+          v-model="model.name"
+          :disabled="isBusy"
+          autocomplete="name"
+          name="name"
+          placeholder="Es. Giulia Rossi"
+          required
+          type="text"
+        />
       </label>
 
       <label class="member-form__field">
         <span class="member-form__field-label">Email</span>
-        <div class="member-form__field-row">
-          <span class="member-form__field-icon" aria-hidden="true">
-            <svg class="member-form__icon" viewBox="0 0 24 24">
-              <rect x="3" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2" />
-              <path d="M4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </span>
-          <input
-            v-model="model.email"
-            :disabled="isBusy"
-            autocomplete="email"
-            name="email"
-            placeholder="nome@azienda.it"
-            required
-            type="email"
-          />
-        </div>
-      </label>
-
-      <div class="member-form__actions">
-        <button
-          class="button-primary member-form__icon-button"
+        <input
+          v-model="model.email"
           :disabled="isBusy"
-          :aria-label="props.mode === 'create' ? 'Crea membro' : 'Salva modifiche'"
-          type="submit"
-        >
-          <svg class="member-form__icon member-form__icon--mobile" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M6 4h10l4 4v12H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-            <path d="M9 4v6h6V4" fill="none" stroke="currentColor" stroke-width="2" />
-            <path d="M9 16h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-          </svg>
-          <span class="member-form__text-label">
-            {{ props.isSaving ? "Salvataggio..." : props.mode === "create" ? "Crea membro" : "Salva modifiche" }}
-          </span>
-        </button>
+          autocomplete="email"
+          name="email"
+          placeholder="nome@azienda.it"
+          required
+          type="email"
+        />
+      </label>
+    </div>
+
+    <div class="member-form__actions">
+      <button class="member-form__cancel" :disabled="isBusy" type="button" @click="emit('cancel')">
+        Annulla
+      </button>
+
+      <div class="member-form__primary-actions">
         <button
           v-if="props.mode === 'edit'"
-          class="button-danger member-form__icon-button"
+          class="member-form__delete"
+          :class="{ 'member-form__delete--confirm': confirmingDelete }"
           :disabled="isBusy"
-          :aria-label="'Elimina membro'"
           type="button"
-          @click="emit('delete')"
+          @click="onDeleteClick"
         >
-          <svg class="member-form__icon member-form__icon--mobile" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 7h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            <path d="M9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            <path d="M8 7l1 12h6l1-12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-          </svg>
-          <span class="member-form__text-label">
-            {{ props.isDeleting ? "Eliminazione..." : "Elimina membro" }}
-          </span>
+          {{ props.isDeleting ? "Eliminazione..." : confirmingDelete ? "Conferma eliminazione" : "Elimina" }}
+        </button>
+
+        <button class="member-form__submit" :disabled="isBusy" type="submit">
+          {{ props.isSaving ? "Salvataggio..." : props.mode === "create" ? "Crea membro" : "Salva modifiche" }}
         </button>
       </div>
-    </form>
-  </section>
+    </div>
+  </form>
 </template>
 
 <style scoped>
 .member-form {
   display: grid;
-  gap: var(--space-4);
-  padding: var(--space-4);
-}
-
-.member-form__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  gap: 1.1rem;
 }
 
 .member-form__status {
   margin: 0;
   color: var(--color-muted);
+  font-size: 0.9rem;
 }
 
-.member-form__icon {
-  width: 1.05rem;
-  height: 1.05rem;
-}
-
-.member-form__icon--mobile {
-  display: none;
-}
-
-.member-form__text-label {
-  display: inline-flex;
-}
-
-.member-form__body {
+.member-form__fields {
   display: grid;
-  gap: var(--space-3);
+  gap: 0.85rem;
 }
 
 .member-form__field {
   display: grid;
-  gap: 0.55rem;
+  gap: 0.4rem;
 }
 
 .member-form__field-label {
   font-weight: 600;
-}
-
-.member-form__field-row {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.member-form__field-icon {
-  display: inline-flex;
+  font-size: 0.85rem;
   color: var(--color-muted);
 }
 
-.member-form__field input {
+.member-form__field > input {
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.95rem 1rem;
-  color: var(--color-brand-navy);
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0.75rem 0.9rem;
+  color: inherit;
+  font-size: 0.98rem;
+  transition:
+    border-color 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 220ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.member-form__field > input:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 114, 166, 0.14);
+  outline: none;
+}
+
+.member-form__field > input:disabled {
+  background: #f4f4f2;
+  color: var(--color-muted);
 }
 
 .member-form__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  padding-top: var(--space-1);
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-top: 0.15rem;
 }
 
-@media (max-width: 720px) {
-  .member-form {
-    gap: 0.9rem;
-    padding: var(--space-3);
-  }
+.member-form__primary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
 
-  .member-form__header {
-    flex-direction: column;
+.member-form__cancel {
+  border: none;
+  background: none;
+  color: var(--color-muted);
+  padding: 0.65rem 0.4rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 180ms ease;
+}
+
+.member-form__cancel:hover:not(:disabled) {
+  color: var(--color-primary);
+}
+
+.member-form__submit,
+.member-form__delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.7rem 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    background-color 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 220ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.member-form__submit {
+  background: var(--color-primary);
+  color: #ffffff;
+  box-shadow: 0 8px 20px -10px rgba(0, 114, 166, 0.55);
+}
+
+.member-form__submit:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.member-form__submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.member-form__delete {
+  background: #fdf2f2;
+  color: var(--color-danger);
+  border-color: rgba(161, 31, 31, 0.16);
+}
+
+.member-form__delete--confirm {
+  background: var(--color-danger);
+  color: #ffffff;
+  border-color: var(--color-danger);
+}
+
+.member-form__delete:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.member-form__submit:disabled,
+.member-form__delete:disabled,
+.member-form__cancel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 520px) {
+  .member-form__actions {
+    flex-direction: column-reverse;
     align-items: stretch;
-    gap: 0.65rem;
   }
 
-  .member-form__field {
-    gap: 0.35rem;
+  .member-form__primary-actions {
+    margin-left: 0;
+    flex-direction: column-reverse;
   }
 
-  .member-form__field-label {
-    display: none;
-  }
-
-  .member-form__field-row {
-    gap: 0.45rem;
-  }
-
-  .member-form__field-icon {
-    width: 2.35rem;
-    height: 2.35rem;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    background: rgba(255, 255, 255, 0.75);
-  }
-
-  .member-form__field-icon .member-form__icon {
-    width: 0.95rem;
-    height: 0.95rem;
-  }
-
-  .member-form__field input {
-    width: 100%;
-  }
-
-  .member-form__icon--mobile {
-    display: inline-flex;
-  }
-
-  .member-form__text-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    border: 0;
-    white-space: nowrap;
-  }
-
-  .member-form__icon-button,
-  .member-form__actions .button-danger {
-    width: 2.5rem;
-    min-width: 2.5rem;
-    height: 2.5rem;
-    padding: 0;
-    border-radius: var(--radius-pill);
-  }
-
-  .member-form__icon-button {
-    justify-content: center;
-    align-items: center;
-  }
-
-  .member-form__actions {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-items: center;
-  }
-
-  .member-form__field-label {
-    font-size: 0.9rem;
-  }
-
-  .member-form__field input {
-    border-radius: var(--radius-control-mobile);
-    padding: 0.72rem 0.78rem;
-    font-size: 0.95rem;
-  }
-
-  .member-form__actions {
-    gap: 0.5rem;
-    padding-top: 0.15rem;
+  .member-form__cancel {
+    text-align: center;
   }
 }
 </style>

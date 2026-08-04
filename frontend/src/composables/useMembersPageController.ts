@@ -31,15 +31,17 @@ export function useMembersPageController() {
   const route = useRoute();
   const router = useRouter();
 
-  const routeMemberId = computed(() => {
+  const activeMemberId = computed(() => {
     const memberId = route.params.memberId;
-    return typeof memberId === "string" && memberId.length > 0 ? memberId : null;
+    return route.name === "member" && typeof memberId === "string" && memberId.length > 0
+      ? memberId
+      : null;
   });
 
-  const pageMode = computed(() => (routeMemberId.value ? "edit" : "create"));
+  const isCreateOpen = computed(() => route.name === "member-new");
 
-  const { toasts } = useToastMessages(successMessage, errorMessage, {
-    onAutoHide: clearFeedback,
+  const { toasts, clearToasts } = useToastMessages(successMessage, errorMessage, {
+    onDismiss: clearFeedback,
   });
 
   watch(
@@ -58,7 +60,7 @@ export function useMembersPageController() {
   });
 
   watch(
-    routeMemberId,
+    activeMemberId,
     async (memberId) => {
       if (!memberId) {
         clearSelection();
@@ -79,43 +81,54 @@ export function useMembersPageController() {
   );
 
   async function handleSelect(memberId: string): Promise<void> {
-    if (routeMemberId.value === memberId) {
-      await loadMember(memberId);
+    if (activeMemberId.value === memberId) {
+      await router.push({ name: "member" });
       return;
     }
 
     await router.push({ name: "member", params: { memberId } });
   }
 
-  async function handleUnloadSelection(): Promise<void> {
-    if (routeMemberId.value === null) {
-      clearSelection();
+  async function handleClose(): Promise<void> {
+    if (route.name === "member" && !activeMemberId.value) {
       return;
     }
 
     await router.push({ name: "member" });
   }
 
+  function handleOpenCreate(): void {
+    void router.push({ name: "member-new" });
+  }
+
   async function handleSubmit(): Promise<void> {
-    if (!routeMemberId.value) {
+    if (isCreateOpen.value) {
       const created = await createMember(memberDraft.value);
 
       if (created?.id) {
-        await router.replace({ name: "member", params: { memberId: created.id } });
+        await router.replace({ name: "member" });
       }
 
       return;
     }
 
-    await updateMember(routeMemberId.value, memberDraft.value);
-  }
-
-  async function handleDelete(): Promise<void> {
-    if (!routeMemberId.value) {
+    if (!activeMemberId.value) {
       return;
     }
 
-    const deleted = await deleteMember(routeMemberId.value);
+    const updated = await updateMember(activeMemberId.value, memberDraft.value);
+
+    if (updated) {
+      await router.replace({ name: "member" });
+    }
+  }
+
+  async function handleDelete(): Promise<void> {
+    if (!activeMemberId.value) {
+      return;
+    }
+
+    const deleted = await deleteMember(activeMemberId.value);
 
     if (deleted) {
       await router.replace({ name: "member" });
@@ -123,18 +136,20 @@ export function useMembersPageController() {
   }
 
   return {
-    memberDraft,
-    members,
-    selectedId: routeMemberId,
-    pageMode,
-    toasts,
+    activeMemberId,
+    clearToasts,
+    handleClose,
+    handleDelete,
+    handleOpenCreate,
+    handleSelect,
+    handleSubmit,
+    isCreateOpen,
     isDeleting,
     isLoadingDetail,
     isLoadingList,
     isSaving,
-    handleDelete,
-    handleSelect,
-    handleSubmit,
-    handleUnloadSelection,
+    memberDraft,
+    members,
+    toasts,
   };
 }
