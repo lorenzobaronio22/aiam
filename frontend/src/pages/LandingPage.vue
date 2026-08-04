@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
+
 </script>
 
 <template>
@@ -39,8 +40,14 @@ import { RouterLink } from "vue-router";
 
 .landing-page__hero {
   display: grid;
-  gap: 1.25rem;
+  gap: 1.1rem;
   max-width: 640px;
+}
+
+.landing-page__mark {
+  border-radius: 22px;
+  box-shadow: 0 20px 40px -18px rgba(0, 27, 76, 0.45);
+  margin-bottom: 0.35rem;
 }
 
 .landing-page__title {
@@ -76,15 +83,17 @@ import { RouterLink } from "vue-router";
   padding: 0.5rem;
   padding-left: 1.4rem;
   font-weight: 600;
-  box-shadow: 0 14px 30px -12px rgba(15, 45, 103, 0.55);
+  box-shadow: 0 14px 30px -12px rgba(0, 114, 166, 0.55);
   transition:
     transform 260ms cubic-bezier(0.32, 0.72, 0, 1),
+    background-color 260ms cubic-bezier(0.32, 0.72, 0, 1),
     box-shadow 260ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .landing-page__cta:hover {
+  background: var(--color-primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 18px 36px -12px rgba(15, 45, 103, 0.6);
+  box-shadow: 0 18px 36px -12px rgba(0, 114, 166, 0.6);
 }
 
 .landing-page__cta:active {

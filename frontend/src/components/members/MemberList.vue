@@ -157,7 +157,7 @@ watch(
 
 .member-card--active {
   border-color: var(--color-primary);
-  box-shadow: 0 18px 38px -20px rgba(15, 45, 103, 0.35);
+  box-shadow: 0 18px 38px -20px rgba(0, 114, 166, 0.4);
 }
 
 .member-card--skeleton {
@@ -198,7 +198,7 @@ watch(
   width: 2.6rem;
   height: 2.6rem;
   border-radius: 999px;
-  background: linear-gradient(155deg, #0f2d67, #2b4d8f);
+  background: linear-gradient(155deg, var(--color-primary-deep), var(--color-primary));
   color: #ffffff;
   font-weight: 700;
   font-size: 0.85rem;

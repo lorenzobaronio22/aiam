@@ -146,7 +146,7 @@ watch(
 
 .member-form__field > input:focus-visible {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(15, 45, 103, 0.12);
+  box-shadow: 0 0 0 3px rgba(0, 114, 166, 0.14);
   outline: none;
 }
 
@@ -205,10 +205,11 @@ watch(
 .member-form__submit {
   background: var(--color-primary);
   color: #ffffff;
-  box-shadow: 0 8px 20px -10px rgba(15, 45, 103, 0.55);
+  box-shadow: 0 8px 20px -10px rgba(0, 114, 166, 0.55);
 }
 
 .member-form__submit:hover:not(:disabled) {
+  background: var(--color-primary-hover);
   transform: translateY(-1px);
 }
 

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { RouterLink, RouterView, useRoute } from "vue-router";
 
+import AppLogo from "./components/AppLogo.vue";
+
 const route = useRoute();
 </script>
 
@@ -8,6 +10,7 @@ const route = useRoute();
   <div class="app-shell">
     <header class="app-shell__header">
       <RouterLink class="app-shell__brand" to="/">
+        <AppLogo :size="32" />
         <strong>APP IM</strong>
       </RouterLink>
 
@@ -55,7 +58,8 @@ const route = useRoute();
 .app-shell__brand {
   display: inline-flex;
   align-items: center;
-  color: var(--color-primary);
+  gap: 0.65rem;
+  color: var(--color-primary-deep);
   text-decoration: none;
   font-size: 1.05rem;
   letter-spacing: -0.01em;
@@ -66,7 +70,7 @@ const route = useRoute();
   align-items: center;
   gap: 0.3rem;
   border-radius: 999px;
-  background: rgba(15, 45, 103, 0.05);
+  background: rgba(0, 114, 166, 0.07);
   padding: 0.3rem;
 }
 
@@ -89,7 +93,7 @@ const route = useRoute();
 .app-shell__nav-link--active {
   background: #ffffff;
   color: var(--color-primary);
-  box-shadow: 0 6px 16px -8px rgba(15, 45, 103, 0.4);
+  box-shadow: 0 6px 16px -8px rgba(0, 114, 166, 0.4);
 }
 
 @media (max-width: 720px) {

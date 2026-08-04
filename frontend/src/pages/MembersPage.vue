@@ -145,10 +145,10 @@ const {
   border: none;
   border-radius: 999px;
   padding: 0.6rem;
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary-deep), var(--color-primary));
   color: #ffffff;
   cursor: pointer;
-  box-shadow: 0 18px 32px -12px rgba(15, 45, 103, 0.55);
+  box-shadow: 0 18px 32px -12px rgba(0, 114, 166, 0.55);
   transition:
     transform 260ms cubic-bezier(0.32, 0.72, 0, 1),
     box-shadow 260ms cubic-bezier(0.32, 0.72, 0, 1),
@@ -157,7 +157,7 @@ const {
 
 .members-page__fab:hover {
   transform: translateY(-2px);
-  box-shadow: 0 22px 38px -12px rgba(15, 45, 103, 0.6);
+  box-shadow: 0 22px 38px -12px rgba(0, 114, 166, 0.6);
 }
 
 .members-page__fab:active {

@@ -1,11 +1,15 @@
 :root {
   font-family: "Plus Jakarta Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  color: #14171a;
-  background: #ffffff;
-  --color-primary: #0f2d67;
-  --color-danger: #a11f1f;
-  --color-border: #e2e2df;
-  --color-muted: #63676d;
+  color: #101b30;
+  background: #fffaf0;
+  --color-primary: #0072a6;
+  --color-primary-hover: #005b85;
+  --color-primary-deep: #001b4c;
+  --color-accent: #ffd488;
+  --color-surface: #fffaf0;
+  --color-danger: #b3261e;
+  --color-border: #e7dfce;
+  --color-muted: #5b6472;
 }
 
 * {
@@ -13,15 +17,15 @@
 }
 
 html {
-  background: #ffffff;
+  background: var(--color-surface);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   font-family: "Plus Jakarta Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  color: #14171a;
-  background: #ffffff;
+  color: #101b30;
+  background: var(--color-surface);
   line-height: 1.5;
 }
 
@@ -48,20 +52,30 @@ a {
   border: 1px solid var(--color-border);
   border-radius: 22px;
   background: #ffffff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 27, 76, 0.04);
 }
 
 .eyebrow {
   display: inline-flex;
   align-items: center;
+  gap: 0.4rem;
   border-radius: 999px;
-  background: rgba(15, 45, 103, 0.07);
-  color: var(--color-primary);
+  background: rgba(0, 114, 166, 0.09);
+  color: var(--color-primary-deep);
   padding: 0.3rem 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-size: 0.68rem;
   font-weight: 700;
+}
+
+.eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-accent);
 }
 
 .button-primary,
@@ -98,7 +112,11 @@ a {
 .button-primary {
   background: var(--color-primary);
   color: #ffffff;
-  box-shadow: 0 8px 20px -10px rgba(15, 45, 103, 0.55);
+  box-shadow: 0 8px 20px -10px rgba(0, 114, 166, 0.55);
+}
+
+.button-primary:hover {
+  background: var(--color-primary-hover);
 }
 
 .button-secondary {
@@ -121,4 +139,5 @@ textarea:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
 
