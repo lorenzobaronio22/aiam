@@ -48,38 +48,54 @@ const route = useRoute();
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  padding: 1rem;
-  border-bottom: 1px solid var(--color-border);
+  padding: 1.1rem max(1.5rem, calc((100% - 980px) / 2 + 1rem));
+  box-shadow: 0 1px 0 var(--color-border);
 }
 
 .app-shell__brand {
   display: inline-flex;
   align-items: center;
-  color: inherit;
+  color: var(--color-primary);
   text-decoration: none;
   font-size: 1.05rem;
+  letter-spacing: -0.01em;
 }
 
 .app-shell__nav {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3rem;
+  border-radius: 999px;
+  background: rgba(15, 45, 103, 0.05);
+  padding: 0.3rem;
 }
 
 .app-shell__nav-link {
-  border-radius: 6px;
-  padding: 0.45rem 0.65rem;
-  color: inherit;
+  border-radius: 999px;
+  padding: 0.5rem 0.95rem;
+  color: var(--color-muted);
   text-decoration: none;
+  font-weight: 600;
+  font-size: 0.92rem;
+  transition:
+    background-color 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    color 220ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.app-shell__nav-link:hover {
+  color: var(--color-primary);
 }
 
 .app-shell__nav-link--active {
-  background: #eef2fa;
+  background: #ffffff;
+  color: var(--color-primary);
+  box-shadow: 0 6px 16px -8px rgba(15, 45, 103, 0.4);
 }
 
 @media (max-width: 720px) {
   .app-shell__header {
     align-items: flex-start;
+    padding: 1rem;
   }
 
   .app-shell__nav {
@@ -92,3 +108,4 @@ const route = useRoute();
   }
 }
 </style>
+
