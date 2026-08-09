@@ -1,6 +1,7 @@
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import { useMemberEvents } from "./useMemberEvents";
 import { useMembers } from "./useMembers";
 import { useToastMessages } from "./useToastMessages";
 
@@ -23,10 +24,18 @@ export function useMembersPageController() {
     loadMember,
     loadMembers,
     members,
+    removeMember,
     selectedMember,
     successMessage,
     updateMember,
+    upsertMember,
   } = useMembers();
+
+  const memberEvents = useMemberEvents({
+    onCreated: upsertMember,
+    onUpdated: upsertMember,
+    onDeleted: removeMember,
+  });
 
   const route = useRoute();
   const router = useRouter();
@@ -57,6 +66,11 @@ export function useMembersPageController() {
 
   onMounted(() => {
     void loadMembers();
+    memberEvents.start();
+  });
+
+  onUnmounted(() => {
+    memberEvents.stop();
   });
 
   watch(

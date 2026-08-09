@@ -1,6 +1,9 @@
+import asyncio
 import json
 
 import pytest
+
+from src.members.events import broadcaster
 
 
 @pytest.mark.anyio
@@ -65,3 +68,35 @@ async def test_create_member_creates_json_store_file(client, temp_member_store):
     assert temp_member_store.exists()
     stored = json.loads(temp_member_store.read_text())
     assert len(stored) == 1
+
+
+@pytest.mark.anyio
+async def test_members_events_stream_emits_created_event(client, temp_member_store):
+    # httpx's ASGITransport fully drains the app before returning a response, so an
+    # infinite SSE generator can't be consumed via client.stream(); call the route's
+    # generator directly instead and drive the real create through the HTTP client.
+    from src.members.router import stream_member_events
+
+    class FakeRequest:
+        async def is_disconnected(self) -> bool:
+            return False
+
+    broadcaster._subscribers.clear()
+    stream = stream_member_events(FakeRequest())
+    next_event_task = asyncio.create_task(stream.__anext__())
+    await asyncio.sleep(0)  # let the generator subscribe before publishing
+    assert broadcaster._subscribers
+
+    create_response = await client.post(
+        "/members",
+        json={"name": "Jane Smith", "email": "jane@example.com"},
+    )
+    assert create_response.status_code == 201
+
+    try:
+        sse_event = await asyncio.wait_for(next_event_task, timeout=1)
+    finally:
+        await stream.aclose()
+
+    assert sse_event.event == "created"
+    assert sse_event.data.member.email == "jane@example.com"

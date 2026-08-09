@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import MembersPage from "./MembersPage.vue";
 import { createTestRouter } from "../router";
+import { FakeEventSource, installFakeEventSource } from "../test/factories/eventSource";
 import { buildMember, buildMemberList } from "../test/factories/members";
 
 function bodyWrapper(): DOMWrapper<HTMLElement> {
@@ -31,14 +32,20 @@ const membersApiMocks = vi.hoisted(() => {
   };
 });
 
-vi.mock("../api/members", () => ({
-  ApiError: membersApiMocks.ApiError,
-  listMembers: membersApiMocks.listMembers,
-  getMember: membersApiMocks.getMember,
-  createMember: membersApiMocks.createMember,
-  updateMember: membersApiMocks.updateMember,
-  deleteMember: membersApiMocks.deleteMember,
-}));
+vi.mock("../api/members", async () => {
+  const actual = await vi.importActual<typeof import("../api/members")>("../api/members");
+
+  return {
+    ApiError: membersApiMocks.ApiError,
+    listMembers: membersApiMocks.listMembers,
+    getMember: membersApiMocks.getMember,
+    createMember: membersApiMocks.createMember,
+    updateMember: membersApiMocks.updateMember,
+    deleteMember: membersApiMocks.deleteMember,
+    toMember: actual.toMember,
+    toMemberPayload: actual.toMemberPayload,
+  };
+});
 
 async function factory(initialPath = "/member") {
   const router = createTestRouter(initialPath);
@@ -55,6 +62,7 @@ async function factory(initialPath = "/member") {
 
 describe("MembersPage", () => {
   beforeEach(() => {
+    installFakeEventSource();
     membersApiMocks.listMembers.mockReset();
     membersApiMocks.getMember.mockReset();
     membersApiMocks.createMember.mockReset();
@@ -221,5 +229,39 @@ describe("MembersPage", () => {
     expect(membersApiMocks.getMember).toHaveBeenCalledWith("member-3");
     expect((wrapper.get('input[name="name"]').element as HTMLInputElement).value).toBe("Anna Verdi");
     expect(router.currentRoute.value.path).toBe("/member/member-3");
+  });
+
+  it("applies a member update pushed over SSE without refetching the list", async () => {
+    membersApiMocks.listMembers.mockResolvedValue(buildMemberList());
+
+    const { wrapper } = await factory();
+    await flushPromises();
+
+    const updated = buildMember({ name: "Giulia Aggiornata", updatedAt: "2026-08-02T10:00:00Z" });
+    FakeEventSource.latest().emit("updated", {
+      member_id: updated.id,
+      member: {
+        id: updated.id,
+        name: updated.name,
+        email: updated.email,
+        created_at: updated.createdAt,
+        updated_at: updated.updatedAt,
+      },
+    });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Giulia Aggiornata");
+    expect(membersApiMocks.listMembers).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes the SSE connection when the page unmounts", async () => {
+    membersApiMocks.listMembers.mockResolvedValue(buildMemberList());
+
+    const { wrapper } = await factory();
+    await flushPromises();
+
+    wrapper.unmount();
+
+    expect(FakeEventSource.latest().closed).toBe(true);
   });
 });
