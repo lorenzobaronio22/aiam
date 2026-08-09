@@ -12,6 +12,7 @@ Use this skill when you are changing or reviewing code in this repo's FastAPI ap
 - Pydantic schemas and settings
 - SQLAlchemy async data access
 - JWT authentication helpers
+- Server-sent events and other streaming endpoints
 - httpx test setup and dependency overrides
 - Alembic migrations and repository-level linting
 - Frontend apps served through FastAPI, including static build output and client-side routing
@@ -22,6 +23,7 @@ Use this skill when you are changing or reviewing code in this repo's FastAPI ap
 3. Keep blocking work out of async routes; use threadpool handoff only when needed.
 4. Use `httpx.AsyncClient` with `ASGITransport` for tests.
 5. Keep changes domain-focused and avoid cross-package coupling.
+6. Treat SSE as a separate streaming surface alongside normal REST CRUD endpoints: use `EventSourceResponse`, typed `AsyncIterable` streams, and replayable event ids when the client may reconnect.
 
 ## References
 - [FastAPI guide](./references/guide.md)

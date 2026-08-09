@@ -62,6 +62,22 @@ Use explicit imports across domains. Avoid wildcard imports and deep package cou
 
 Do not put sync calls like `time.sleep`, `open`, sync HTTP clients, or sync DB drivers inside `async def` handlers.
 
+## Server-Sent Events
+
+Use SSE for server-initiated updates such as live notifications, progress updates, logs, AI token streams, and similar one-way pushes. Keep normal create, read, update, and delete operations as standard JSON REST endpoints; SSE should complement CRUD, not replace it.
+
+- Use `response_class=EventSourceResponse` and import `EventSourceResponse` and `ServerSentEvent` from `fastapi.sse`.
+- Prefer `async def` plus `AsyncIterable[...]` for streams that await other async work; only use plain `def` when the producer is inherently blocking and you need FastAPI to isolate it from the event loop.
+- Yield small events frequently instead of buffering large payloads.
+- Declare a return type like `AsyncIterable[YourModel]` or `AsyncIterable[ServerSentEvent]` when you want FastAPI to validate and document the stream.
+- Use `ServerSentEvent` when you need `event`, `id`, `retry`, or `comment` fields.
+- Use `raw_data` only for preformatted text or sentinel values such as `[DONE]`; do not combine `data` and `raw_data` on the same event.
+- Read `Last-Event-ID` from a header parameter when you want clients to resume after disconnects, and make the stream replayable when practical.
+- SSE works with `GET` and `POST`; use the method that best matches the protocol surface.
+- FastAPI already sends keepalive pings and sets `Cache-Control: no-cache` and `X-Accel-Buffering: no`; do not duplicate those headers unless a proxy requires a targeted override.
+- When streaming from a request-scoped resource, check for disconnects and stop the generator promptly.
+- Client code should use the browser `EventSource` API, listen for named events when the server sends them, and call `.close()` when the stream is no longer needed.
+
 ## Pydantic and Settings
 
 - Use Pydantic v2 patterns.
@@ -88,6 +104,7 @@ Do not put sync calls like `time.sleep`, `open`, sync HTTP clients, or sync DB d
 - Use `httpx.AsyncClient` with `ASGITransport` for in-process tests.
 - Override dependencies with `app.dependency_overrides` instead of monkeypatching internals.
 - Prefer real integration coverage for database behavior when practical.
+- Test SSE endpoints with the same async client stack and read the stream incrementally instead of waiting for a full JSON response.
 
 ## Migrations and Linting
 
@@ -101,6 +118,8 @@ Do not put sync calls like `time.sleep`, `open`, sync HTTP clients, or sync DB d
 - Using deprecated Pydantic v1 serialization APIs.
 - Using `from jose import jwt`.
 - Using `async_asgi_testclient`.
+- Buffering SSE streams into one large response instead of yielding events progressively.
+- Using SSE for bidirectional messaging when WebSockets are a better fit.
 - Returning a Pydantic model and also setting the same class as `response_model` unless that is intentional.
 - Mocking the database in integration tests when a real DB is feasible.
 - Catching broad `Exception` around route bodies.
