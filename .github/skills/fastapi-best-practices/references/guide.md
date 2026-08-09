@@ -78,6 +78,22 @@ Use SSE for server-initiated updates such as live notifications, progress update
 - When streaming from a request-scoped resource, check for disconnects and stop the generator promptly.
 - Client code should use the browser `EventSource` API, listen for named events when the server sends them, and call `.close()` when the stream is no longer needed.
 
+## WebSockets
+
+Use WebSockets for bidirectional realtime features such as chat, collaborative editing, live dashboards that need client-to-server messages, and other interactive channels. Keep CRUD endpoints as plain HTTP JSON routes; use WebSockets only when the client needs to send and receive messages on the same long-lived connection.
+
+- Use `@app.websocket(...)` or `@router.websocket(...)` for websocket routes.
+- Accept the connection with `await websocket.accept()` before sending or receiving frames.
+- Use dependencies like `Depends`, `Security`, `Cookie`, `Header`, `Path`, and `Query` in websocket endpoints when you need request validation, auth, or routing inputs.
+- Raise `WebSocketException` with an appropriate close code for unauthorized or invalid connections; do not use `HTTPException` after the upgrade boundary.
+- Catch `WebSocketDisconnect` and remove the connection from any in-memory registry immediately.
+- Keep shared connection state small and explicit; in-memory connection managers only work inside a single process.
+- If you need broadcasts across workers or machines, move fan-out to an external broker or pub/sub layer instead of relying on a Python list of active sockets.
+- Treat incoming messages as an unbounded stream: process them quickly, keep handlers non-blocking, and avoid expensive work in the message loop.
+- Use subprotocols, binary frames, or JSON frames intentionally; match the message format to the client contract.
+- Client code should monitor `open`, `message`, `error`, and `close`, call `send()` only after the socket is open, and use `close()` when the session ends.
+- WebSocket APIs have no built-in backpressure in the browser, so avoid letting the server outrun the client; throttle, queue, or drop messages intentionally when needed.
+
 ## Pydantic and Settings
 
 - Use Pydantic v2 patterns.
@@ -105,6 +121,7 @@ Use SSE for server-initiated updates such as live notifications, progress update
 - Override dependencies with `app.dependency_overrides` instead of monkeypatching internals.
 - Prefer real integration coverage for database behavior when practical.
 - Test SSE endpoints with the same async client stack and read the stream incrementally instead of waiting for a full JSON response.
+- Test WebSockets with `fastapi.testclient.TestClient` and `websocket_connect()` inside a `with` block.
 
 ## Migrations and Linting
 
@@ -120,6 +137,8 @@ Use SSE for server-initiated updates such as live notifications, progress update
 - Using `async_asgi_testclient`.
 - Buffering SSE streams into one large response instead of yielding events progressively.
 - Using SSE for bidirectional messaging when WebSockets are a better fit.
+- Using WebSockets for server-only push when SSE is sufficient.
+- Keeping all active sockets in memory across multiple workers or instances.
 - Returning a Pydantic model and also setting the same class as `response_model` unless that is intentional.
 - Mocking the database in integration tests when a real DB is feasible.
 - Catching broad `Exception` around route bodies.
