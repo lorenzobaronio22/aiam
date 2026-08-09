@@ -51,7 +51,7 @@ function toProblemResponse(payload: unknown): ProblemResponse {
   };
 }
 
-function toMemberPayload(payload: unknown): MemberApiPayload {
+export function toMemberPayload(payload: unknown): MemberApiPayload {
   if (!isRecord(payload)) {
     throw new Error("Invalid member payload: expected object.");
   }
@@ -73,7 +73,7 @@ function toMemberPayloadList(payload: unknown): MemberApiPayload[] {
   return payload.map(toMemberPayload);
 }
 
-function toMember(payload: MemberApiPayload): Member {
+export function toMember(payload: MemberApiPayload): Member {
   return {
     id: payload.id,
     name: payload.name,

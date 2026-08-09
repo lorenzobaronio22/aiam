@@ -19,3 +19,8 @@ class MemberOut(ApiModel):
 class MemberUpdate(ApiModel):
     name: str | None = None
     email: EmailStr | None = None
+
+
+class MemberEventPayload(ApiModel):
+    member_id: str
+    member: MemberOut | None = None

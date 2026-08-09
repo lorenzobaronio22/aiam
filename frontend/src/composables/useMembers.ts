@@ -87,6 +87,14 @@ export function useMembers() {
     selectedMember.value = null;
   }
 
+  function removeMember(memberId: string): void {
+    members.value = members.value.filter((member) => member.id !== memberId);
+
+    if (selectedMember.value?.id === memberId) {
+      resetSelection();
+    }
+  }
+
   async function loadMembers(): Promise<void> {
     setAsyncState("loadingList", true);
     errorMessage.value = "";
@@ -195,6 +203,8 @@ export function useMembers() {
     deleteMember,
     loadMember,
     loadMembers,
+    removeMember,
     updateMember,
+    upsertMember,
   };
 }

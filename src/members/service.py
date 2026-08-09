@@ -1,6 +1,7 @@
 import uuid
 
 from src.members import utils
+from src.members.events import broadcaster
 from src.members.exceptions import DuplicateMemberEmail, MemberNotFound
 from src.members.schemas import MemberIn, MemberOut, MemberUpdate
 
@@ -26,7 +27,9 @@ async def create_member(payload: MemberIn) -> MemberOut:
     }
     data[member_id] = record
     await utils.save(data)
-    return utils.to_member_out(record)
+    member = utils.to_member_out(record)
+    broadcaster.publish_created(member)
+    return member
 
 
 async def get_member_or_raise(member_id: str) -> dict:
@@ -55,7 +58,9 @@ async def update_member(member_id: str, payload: MemberUpdate) -> MemberOut:
 
     record["updated_at"] = utils.now_iso()
     await utils.save(data)
-    return utils.to_member_out(record)
+    member = utils.to_member_out(record)
+    broadcaster.publish_updated(member)
+    return member
 
 
 async def delete_member(member_id: str) -> None:
@@ -65,3 +70,4 @@ async def delete_member(member_id: str) -> None:
 
     del data[member_id]
     await utils.save(data)
+    broadcaster.publish_deleted(member_id)
