@@ -146,7 +146,6 @@ jobs:
 
   deploy:
     needs: [docker]
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: production
     concurrency:
