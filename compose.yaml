@@ -5,8 +5,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8010:8000"
-    volumes:
-      - ./data:/app/data
     environment:
       ENVIRONMENT: local
       DATA_DIR: /app/data
