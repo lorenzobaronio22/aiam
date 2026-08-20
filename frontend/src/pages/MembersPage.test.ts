@@ -110,6 +110,7 @@ describe("MembersPage", () => {
     expect(membersApiMocks.updateMember).toHaveBeenCalledWith("member-1", {
       name: "Giulia Bianchi",
       email: "giulia@example.com",
+      identifiers: [],
     });
     expect(bodyWrapper().text()).toContain("Modifiche salvate con successo.");
     expect(router.currentRoute.value.path).toBe("/member");
@@ -179,13 +180,14 @@ describe("MembersPage", () => {
     expect(membersApiMocks.createMember).toHaveBeenCalledWith({
       name: "Laura Neri",
       email: "laura@example.com",
+      identifiers: [],
     });
     expect(bodyWrapper().text()).toContain("Nuovo membro salvato correttamente.");
     expect(router.currentRoute.value.path).toBe("/member");
     expect(bodyWrapper().find(".members-page__sheet").exists()).toBe(false);
   });
 
-  it("shows the duplicate email error and keeps the create sheet open", async () => {
+  it("shows the duplicate identifier error and keeps the create sheet open", async () => {
     membersApiMocks.listMembers.mockResolvedValue([]);
     membersApiMocks.createMember.mockRejectedValue(
       new membersApiMocks.ApiError(409, "Conflict", "duplicate"),
@@ -202,7 +204,7 @@ describe("MembersPage", () => {
     await bodyWrapper().get(".members-page__sheet form").trigger("submit");
     await flushPromises();
 
-    expect(bodyWrapper().text()).toContain("Esiste gia un membro con questa email.");
+    expect(bodyWrapper().text()).toContain("Esiste gia un membro con questo codice fiscale.");
     expect(router.currentRoute.value.path).toBe("/member/new");
     expect(bodyWrapper().find(".members-page__sheet").exists()).toBe(true);
   });

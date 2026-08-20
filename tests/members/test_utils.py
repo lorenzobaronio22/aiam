@@ -1,15 +1,28 @@
 from src.members import constants, utils
-from src.members.utils import email_exists
+from src.members.utils import identifier_exists
 
 
-def test_email_exists_respects_excluded_member_id():
+def test_identifier_exists_respects_excluded_member_id():
     data = {
-        "1": {"id": "1", "email": "jane@example.com"},
-        "2": {"id": "2", "email": "john@example.com"},
+        "1": {
+            "id": "1",
+            "identifiers": [{"type": "tax_id", "country": "IT", "value": "RSSMRA80A01H501U"}],
+        },
+        "2": {
+            "id": "2",
+            "identifiers": [{"type": "tax_id", "country": "IT", "value": "VRDLGU85M01H501Z"}],
+        },
     }
 
-    assert email_exists(data, "jane@example.com") is True
-    assert email_exists(data, "jane@example.com", exclude_id="1") is False
+    assert identifier_exists(data, "tax_id", "IT", "RSSMRA80A01H501U") is True
+    assert identifier_exists(data, "tax_id", "IT", "RSSMRA80A01H501U", exclude_id="1") is False
+    assert identifier_exists(data, "tax_id", "IT", "missing-value") is False
+
+
+def test_identifier_exists_ignores_records_without_identifiers():
+    data = {"1": {"id": "1"}}
+
+    assert identifier_exists(data, "tax_id", "IT", "RSSMRA80A01H501U") is False
 
 
 def test_load_sync_returns_empty_dict_for_corrupt_json_file(tmp_path):

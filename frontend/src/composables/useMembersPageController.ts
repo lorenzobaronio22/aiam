@@ -4,11 +4,23 @@ import { useRoute, useRouter } from "vue-router";
 import { useMemberEvents } from "./useMemberEvents";
 import { useMembers } from "./useMembers";
 import { useToastMessages } from "./useToastMessages";
+import type { MemberInput } from "../types/members";
+
+function draftToInput(draft: { name: string; email: string; taxId: string }): MemberInput {
+  const taxId = draft.taxId.trim();
+
+  return {
+    name: draft.name,
+    email: draft.email,
+    identifiers: taxId ? [{ type: "tax_id", country: "IT", value: taxId }] : [],
+  };
+}
 
 export function useMembersPageController() {
   const memberDraft = ref({
     name: "",
     email: "",
+    taxId: "",
   });
 
   const {
@@ -59,6 +71,7 @@ export function useMembersPageController() {
       memberDraft.value = {
         name: member?.name ?? "",
         email: member?.email ?? "",
+        taxId: member?.identifiers.find((identifier) => identifier.type === "tax_id")?.value ?? "",
       };
     },
     { immediate: true },
@@ -117,7 +130,7 @@ export function useMembersPageController() {
 
   async function handleSubmit(): Promise<void> {
     if (isCreateOpen.value) {
-      const created = await createMember(memberDraft.value);
+      const created = await createMember(draftToInput(memberDraft.value));
 
       if (created?.id) {
         await router.replace({ name: "member" });
@@ -130,7 +143,7 @@ export function useMembersPageController() {
       return;
     }
 
-    const updated = await updateMember(activeMemberId.value, memberDraft.value);
+    const updated = await updateMember(activeMemberId.value, draftToInput(memberDraft.value));
 
     if (updated) {
       await router.replace({ name: "member" });

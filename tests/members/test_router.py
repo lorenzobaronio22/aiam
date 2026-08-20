@@ -7,14 +7,30 @@ from src.members.events import broadcaster
 
 
 @pytest.mark.anyio
-async def test_create_member_rejects_duplicate_email(client, temp_member_store):
+async def test_create_member_allows_duplicate_email(client, temp_member_store):
     first = await client.post(
         "/members",
         json={"name": "Jane Smith", "email": "jane@example.com"},
     )
-    duplicate = await client.post(
+    second = await client.post(
         "/members",
         json={"name": "Another Jane", "email": "jane@example.com"},
+    )
+
+    assert first.status_code == 201
+    assert second.status_code == 201
+
+
+@pytest.mark.anyio
+async def test_create_member_rejects_duplicate_identifier(client, temp_member_store):
+    identifier = {"type": "tax_id", "country": "IT", "value": "RSSMRA80A01H501U"}
+    first = await client.post(
+        "/members",
+        json={"name": "Jane Smith", "email": "jane@example.com", "identifiers": [identifier]},
+    )
+    duplicate = await client.post(
+        "/members",
+        json={"name": "Another Jane", "email": "jane2@example.com", "identifiers": [identifier]},
     )
 
     assert first.status_code == 201
@@ -23,18 +39,21 @@ async def test_create_member_rejects_duplicate_email(client, temp_member_store):
 
 @pytest.mark.anyio
 async def test_member_crud_lifecycle(client, temp_member_store):
+    identifier = {"type": "tax_id", "country": "IT", "value": "RSSMRA80A01H501U"}
     create_response = await client.post(
         "/members",
-        json={"name": "Jane Smith", "email": "jane@example.com"},
+        json={"name": "Jane Smith", "email": "jane@example.com", "identifiers": [identifier]},
     )
 
     assert create_response.status_code == 201
     created = create_response.json()
     member_id = created["id"]
+    assert created["identifiers"] == [identifier]
 
     get_response = await client.get(f"/members/{member_id}")
     assert get_response.status_code == 200
     assert get_response.json()["email"] == "jane@example.com"
+    assert get_response.json()["identifiers"] == [identifier]
 
     patch_response = await client.patch(
         f"/members/{member_id}",
@@ -42,6 +61,7 @@ async def test_member_crud_lifecycle(client, temp_member_store):
     )
     assert patch_response.status_code == 200
     assert patch_response.json()["name"] == "Jane Doe"
+    assert patch_response.json()["identifiers"] == [identifier]
 
     update_response = await client.put(
         f"/members/{member_id}",
