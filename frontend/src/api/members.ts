@@ -1,6 +1,7 @@
 import type {
   Member,
   MemberApiPayload,
+  MemberIdentifier,
   MemberInput,
   ProblemResponse,
 } from "../types/members";
@@ -51,6 +52,30 @@ function toProblemResponse(payload: unknown): ProblemResponse {
   };
 }
 
+function toMemberIdentifier(value: unknown): MemberIdentifier {
+  if (!isRecord(value)) {
+    throw new Error("Invalid member payload: expected identifier object.");
+  }
+
+  return {
+    type: readRequiredString(value.type, "identifier type") as MemberIdentifier["type"],
+    country: readRequiredString(value.country, "identifier country") as MemberIdentifier["country"],
+    value: readRequiredString(value.value, "identifier value"),
+  };
+}
+
+function toMemberIdentifiers(payload: unknown): MemberIdentifier[] {
+  if (payload === undefined || payload === null) {
+    return [];
+  }
+
+  if (!Array.isArray(payload)) {
+    throw new Error("Invalid member payload: expected identifiers array.");
+  }
+
+  return payload.map(toMemberIdentifier);
+}
+
 export function toMemberPayload(payload: unknown): MemberApiPayload {
   if (!isRecord(payload)) {
     throw new Error("Invalid member payload: expected object.");
@@ -60,6 +85,7 @@ export function toMemberPayload(payload: unknown): MemberApiPayload {
     id: readRequiredString(payload.id, "id"),
     name: readRequiredString(payload.name, "name"),
     email: readRequiredString(payload.email, "email"),
+    identifiers: toMemberIdentifiers(payload.identifiers),
     created_at: readRequiredString(payload.created_at, "created_at"),
     updated_at: readRequiredString(payload.updated_at, "updated_at"),
   };
@@ -78,6 +104,7 @@ export function toMember(payload: MemberApiPayload): Member {
     id: payload.id,
     name: payload.name,
     email: payload.email,
+    identifiers: payload.identifiers,
     createdAt: payload.created_at,
     updatedAt: payload.updated_at,
   };

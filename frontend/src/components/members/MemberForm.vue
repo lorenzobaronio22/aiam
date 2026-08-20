@@ -4,6 +4,7 @@ import { computed, ref, watch } from "vue";
 const model = defineModel<{
   name: string;
   email: string;
+  taxId: string;
 }>({ required: true });
 
 const props = defineProps<{
@@ -75,6 +76,18 @@ watch(
           placeholder="nome@azienda.it"
           required
           type="email"
+        />
+      </label>
+
+      <label class="member-form__field">
+        <span class="member-form__field-label">Codice Fiscale</span>
+        <input
+          v-model="model.taxId"
+          :disabled="isBusy"
+          autocomplete="off"
+          name="taxId"
+          placeholder="RSSMRA80A01H501U"
+          type="text"
         />
       </label>
     </div>

@@ -20,6 +20,10 @@ function normalizeInput(input: MemberInput): MemberInput {
   return {
     name: input.name.trim(),
     email: input.email.trim().toLowerCase(),
+    identifiers: input.identifiers.map((identifier) => ({
+      ...identifier,
+      value: identifier.value.trim(),
+    })),
   };
 }
 
@@ -29,7 +33,7 @@ function toMessage(error: unknown, fallback: string): string {
   }
 
   if (error.status === 409) {
-    return "Esiste gia un membro con questa email. Usa un indirizzo diverso.";
+    return "Esiste gia un membro con questo codice fiscale. Verifica il valore inserito.";
   }
 
   if (error.status === 404) {

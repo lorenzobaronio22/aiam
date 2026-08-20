@@ -2,8 +2,20 @@ import uuid
 
 from src.members import utils
 from src.members.events import broadcaster
-from src.members.exceptions import DuplicateMemberEmail, MemberNotFound
-from src.members.schemas import MemberIn, MemberOut, MemberUpdate
+from src.members.exceptions import DuplicateMemberIdentifier, MemberNotFound
+from src.members.schemas import MemberIdentifier, MemberIn, MemberOut, MemberUpdate
+
+
+def _check_identifiers_available(
+    data: dict[str, dict],
+    identifiers: list[MemberIdentifier],
+    exclude_id: str | None = None,
+) -> None:
+    for identifier in identifiers:
+        if utils.identifier_exists(
+            data, identifier.type, identifier.country, identifier.value, exclude_id=exclude_id
+        ):
+            raise DuplicateMemberIdentifier(identifier.type, identifier.value)
 
 
 async def list_members() -> list[MemberOut]:
@@ -13,15 +25,15 @@ async def list_members() -> list[MemberOut]:
 
 async def create_member(payload: MemberIn) -> MemberOut:
     data = await utils.load()
-    if utils.email_exists(data, str(payload.email)):
-        raise DuplicateMemberEmail(str(payload.email))
+    _check_identifiers_available(data, payload.identifiers)
 
-    member_id = str(uuid.uuid4())
+    member_id = str(uuid.uuid7())
     now = utils.now_iso()
     record = {
         "id": member_id,
         "name": payload.name,
         "email": str(payload.email),
+        "identifiers": [identifier.model_dump() for identifier in payload.identifiers],
         "created_at": now,
         "updated_at": now,
     }
@@ -46,15 +58,15 @@ async def update_member(member_id: str, payload: MemberUpdate) -> MemberOut:
     if record is None:
         raise MemberNotFound(member_id)
 
-    if payload.email is not None and utils.email_exists(
-        data, str(payload.email), exclude_id=member_id
-    ):
-        raise DuplicateMemberEmail(str(payload.email))
+    if payload.identifiers is not None:
+        _check_identifiers_available(data, payload.identifiers, exclude_id=member_id)
 
     if payload.name is not None:
         record["name"] = payload.name
     if payload.email is not None:
         record["email"] = str(payload.email)
+    if payload.identifiers is not None:
+        record["identifiers"] = [identifier.model_dump() for identifier in payload.identifiers]
 
     record["updated_at"] = utils.now_iso()
     await utils.save(data)

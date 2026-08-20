@@ -12,10 +12,10 @@ class MemberNotFound(ProblemError):
         )
 
 
-class DuplicateMemberEmail(ProblemError):
-    def __init__(self, email: str):
+class DuplicateMemberIdentifier(ProblemError):
+    def __init__(self, identifier_type: str, value: str):
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
             title="Conflict",
-            detail=f"A member with email '{email}' already exists.",
+            detail=f"A member with {identifier_type} '{value}' already exists.",
         )

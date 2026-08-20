@@ -14,7 +14,7 @@ const props = defineProps<{
   isDeleting: boolean;
 }>();
 
-const draft = defineModel<{ name: string; email: string }>("draft", { required: true });
+const draft = defineModel<{ name: string; email: string; taxId: string }>("draft", { required: true });
 
 const emit = defineEmits<{
   select: [memberId: string];

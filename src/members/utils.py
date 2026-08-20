@@ -18,13 +18,29 @@ def to_member_out(record: dict):
         id=record["id"],
         name=record["name"],
         email=record["email"],
+        identifiers=record.get("identifiers", []),
         created_at=record["created_at"],
         updated_at=record["updated_at"],
     )
 
 
-def email_exists(data: dict[str, dict], email: str, exclude_id: str | None = None) -> bool:
-    return any(r["email"] == email and r["id"] != exclude_id for r in data.values())
+def identifier_exists(
+    data: dict[str, dict],
+    identifier_type: str,
+    country: str,
+    value: str,
+    exclude_id: str | None = None,
+) -> bool:
+    return any(
+        record["id"] != exclude_id
+        and any(
+            existing["type"] == identifier_type
+            and existing["country"] == country
+            and existing["value"] == value
+            for existing in record.get("identifiers", [])
+        )
+        for record in data.values()
+    )
 
 
 def load_sync() -> dict[str, dict]:
