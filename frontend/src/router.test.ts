@@ -39,4 +39,14 @@ describe("router", () => {
 
     expect(router.currentRoute.value.path).toBe("/");
   });
+
+  it("resolves the attribute types catalog route", async () => {
+    const router = createTestRouter("/");
+    await router.isReady();
+
+    await router.push("/attribute-types");
+
+    expect(router.currentRoute.value.name).toBe("attribute-types");
+    expect(router.currentRoute.value.path).toBe("/attribute-types");
+  });
 });
