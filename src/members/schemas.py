@@ -41,11 +41,48 @@ class MemberIn(ApiModel):
         return _reject_duplicate_identifier_types(identifiers)
 
 
+class MemberAttributeIn(ApiModel):
+    key: str
+    label: str
+    value: str
+
+    @field_validator("label")
+    @classmethod
+    def _label_must_not_be_blank(cls, label: str) -> str:
+        label = label.strip()
+        if not label:
+            raise ValueError("Attribute label must not be blank.")
+        return label
+
+
+class MemberAttributeUpdate(ApiModel):
+    label: str | None = None
+    value: str | None = None
+
+    @field_validator("label")
+    @classmethod
+    def _label_must_not_be_blank(cls, label: str | None) -> str | None:
+        if label is None:
+            return None
+        label = label.strip()
+        if not label:
+            raise ValueError("Attribute label must not be blank.")
+        return label
+
+
+class MemberAttributeOut(ApiModel):
+    id: str
+    key: str
+    label: str
+    value: str
+
+
 class MemberOut(ApiModel):
     id: str
     name: str
     email: str
     identifiers: list[MemberIdentifier] = []
+    attributes: list[MemberAttributeOut] = []
     created_at: str
     updated_at: str
 

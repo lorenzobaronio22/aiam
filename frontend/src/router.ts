@@ -8,6 +8,7 @@ import {
 
 import AttributeTypesPage from "./pages/AttributeTypesPage.vue";
 import LandingPage from "./pages/LandingPage.vue";
+import MemberAttributesPage from "./pages/MemberAttributesPage.vue";
 import MembersPage from "./pages/MembersPage.vue";
 
 const HOME_PATH = "/";
@@ -31,6 +32,11 @@ export const routes: RouteRecordRaw[] = [
     path: `${MEMBER_PATH}/new`,
     name: "member-new",
     component: MembersPage,
+  },
+  {
+    path: `${MEMBER_PATH}/:memberId/attributes`,
+    name: "member-attributes",
+    component: MemberAttributesPage,
   },
   {
     path: `${MEMBER_PATH}/:memberId?`,

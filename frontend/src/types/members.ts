@@ -4,11 +4,37 @@ export interface MemberIdentifier {
   value: string;
 }
 
+export interface MemberAttribute {
+  id: string;
+  key: string;
+  label: string;
+  value: string;
+}
+
+export interface MemberAttributeInput {
+  key: string;
+  label: string;
+  value: string;
+}
+
+export interface MemberAttributeUpdateInput {
+  label?: string;
+  value?: string;
+}
+
+export interface MemberAttributeApiPayload {
+  id: string;
+  key: string;
+  label: string;
+  value: string;
+}
+
 export interface Member {
   id: string;
   name: string;
   email: string;
   identifiers: readonly MemberIdentifier[];
+  attributes: readonly MemberAttribute[];
   createdAt: string;
   updatedAt: string;
 }
@@ -24,6 +50,7 @@ export interface MemberApiPayload {
   name: string;
   email: string;
   identifiers: MemberIdentifier[];
+  attributes: MemberAttributeApiPayload[];
   created_at: string;
   updated_at: string;
 }

@@ -1,6 +1,9 @@
 import type {
   Member,
   MemberApiPayload,
+  MemberAttributeApiPayload,
+  MemberAttributeInput,
+  MemberAttributeUpdateInput,
   MemberIdentifier,
   MemberInput,
   ProblemResponse,
@@ -76,6 +79,31 @@ function toMemberIdentifiers(payload: unknown): MemberIdentifier[] {
   return payload.map(toMemberIdentifier);
 }
 
+function toMemberAttribute(value: unknown): MemberAttributeApiPayload {
+  if (!isRecord(value)) {
+    throw new Error("Invalid member payload: expected attribute object.");
+  }
+
+  return {
+    id: readRequiredString(value.id, "attribute id"),
+    key: readRequiredString(value.key, "attribute key"),
+    label: readRequiredString(value.label, "attribute label"),
+    value: readString(value.value),
+  };
+}
+
+function toMemberAttributes(payload: unknown): MemberAttributeApiPayload[] {
+  if (payload === undefined || payload === null) {
+    return [];
+  }
+
+  if (!Array.isArray(payload)) {
+    throw new Error("Invalid member payload: expected attributes array.");
+  }
+
+  return payload.map(toMemberAttribute);
+}
+
 export function toMemberPayload(payload: unknown): MemberApiPayload {
   if (!isRecord(payload)) {
     throw new Error("Invalid member payload: expected object.");
@@ -86,6 +114,7 @@ export function toMemberPayload(payload: unknown): MemberApiPayload {
     name: readRequiredString(payload.name, "name"),
     email: readRequiredString(payload.email, "email"),
     identifiers: toMemberIdentifiers(payload.identifiers),
+    attributes: toMemberAttributes(payload.attributes),
     created_at: readRequiredString(payload.created_at, "created_at"),
     updated_at: readRequiredString(payload.updated_at, "updated_at"),
   };
@@ -105,6 +134,7 @@ export function toMember(payload: MemberApiPayload): Member {
     name: payload.name,
     email: payload.email,
     identifiers: payload.identifiers,
+    attributes: payload.attributes,
     createdAt: payload.created_at,
     updatedAt: payload.updated_at,
   };
@@ -184,4 +214,49 @@ export async function deleteMember(memberId: string): Promise<void> {
     method: "DELETE",
     headers: { Accept: jsonHeaders.Accept },
   });
+}
+
+export async function addMemberAttribute(
+  memberId: string,
+  input: MemberAttributeInput,
+): Promise<Member> {
+  const payload = toMemberPayload(await request<unknown>(`/members/${memberId}/attributes`, {
+    method: "POST",
+    headers: jsonHeaders,
+    body: JSON.stringify(input),
+  }));
+
+  return toMember(payload);
+}
+
+export async function updateMemberAttribute(
+  memberId: string,
+  attributeId: string,
+  input: MemberAttributeUpdateInput,
+): Promise<Member> {
+  const payload = toMemberPayload(await request<unknown>(
+    `/members/${memberId}/attributes/${attributeId}`,
+    {
+      method: "PUT",
+      headers: jsonHeaders,
+      body: JSON.stringify(input),
+    },
+  ));
+
+  return toMember(payload);
+}
+
+export async function deleteMemberAttribute(
+  memberId: string,
+  attributeId: string,
+): Promise<Member> {
+  const payload = toMemberPayload(await request<unknown>(
+    `/members/${memberId}/attributes/${attributeId}`,
+    {
+      method: "DELETE",
+      headers: { Accept: jsonHeaders.Accept },
+    },
+  ));
+
+  return toMember(payload);
 }

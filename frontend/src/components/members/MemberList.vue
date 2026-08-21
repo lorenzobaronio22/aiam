@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, watch } from "vue";
+import { RouterLink } from "vue-router";
 
 import type { Member } from "../../types/members";
 import { formatDateTime, getInitials } from "../../utils/formatters";
@@ -103,6 +104,14 @@ watch(
               @delete="emit('delete')"
               @submit="emit('submit')"
             />
+
+            <RouterLink
+              v-if="activeMemberId === member.id"
+              class="member-card__attributes-link"
+              :to="{ name: 'member-attributes', params: { memberId: member.id } }"
+            >
+              Gestisci attributi
+            </RouterLink>
           </div>
         </div>
       </li>
@@ -266,6 +275,13 @@ watch(
   overflow: hidden;
   min-height: 0;
   padding: 0 1.1rem 1.1rem;
+}
+
+.member-card__attributes-link {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 @media (min-width: 640px) {

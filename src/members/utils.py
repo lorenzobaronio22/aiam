@@ -19,6 +19,7 @@ def to_member_out(record: dict):
         name=record["name"],
         email=record["email"],
         identifiers=record.get("identifiers", []),
+        attributes=record.get("attributes", []),
         created_at=record["created_at"],
         updated_at=record["updated_at"],
     )

@@ -49,4 +49,16 @@ describe("router", () => {
     expect(router.currentRoute.value.name).toBe("attribute-types");
     expect(router.currentRoute.value.path).toBe("/attribute-types");
   });
+
+  it("resolves the member attributes management route", async () => {
+    const router = createTestRouter("/");
+    await router.isReady();
+
+    await router.push("/member/4ed7f2a8-57ff-4f09-85a7-d2eca249fb48/attributes");
+
+    expect(router.currentRoute.value.name).toBe("member-attributes");
+    expect(router.currentRoute.value.path).toBe(
+      "/member/4ed7f2a8-57ff-4f09-85a7-d2eca249fb48/attributes",
+    );
+  });
 });

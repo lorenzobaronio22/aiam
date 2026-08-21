@@ -2,13 +2,16 @@ import { computed, readonly, ref, shallowRef } from "vue";
 
 import {
   ApiError,
+  addMemberAttribute as addMemberAttributeRequest,
   createMember as createMemberRequest,
   deleteMember as deleteMemberRequest,
+  deleteMemberAttribute as deleteMemberAttributeRequest,
   getMember as getMemberRequest,
   listMembers as listMembersRequest,
   updateMember as updateMemberRequest,
+  updateMemberAttribute as updateMemberAttributeRequest,
 } from "../api/members";
-import type { Member, MemberInput } from "../types/members";
+import type { Member, MemberAttributeInput, MemberAttributeUpdateInput, MemberInput } from "../types/members";
 
 function sortMembers(items: Member[]): Member[] {
   return [...items].sort((left, right) => {
@@ -33,7 +36,7 @@ function toMessage(error: unknown, fallback: string): string {
   }
 
   if (error.status === 409) {
-    return "Esiste gia un membro con questo codice fiscale. Verifica il valore inserito.";
+    return error.detail || "Esiste gia un membro con questo codice fiscale. Verifica il valore inserito.";
   }
 
   if (error.status === 404) {
@@ -192,6 +195,67 @@ export function useMembers() {
     }
   }
 
+  async function addMemberAttribute(
+    memberId: string,
+    input: MemberAttributeInput,
+  ): Promise<Member | null> {
+    clearFeedback();
+    setAsyncState("saving", true);
+
+    try {
+      const updated = await addMemberAttributeRequest(memberId, input);
+      upsertMember(updated);
+      selectedMember.value = updated;
+      successMessage.value = "Attributo aggiunto correttamente.";
+      return updated;
+    } catch (error) {
+      errorMessage.value = toMessage(error, "Non e stato possibile aggiungere l'attributo.");
+      return null;
+    } finally {
+      setAsyncState("saving", false);
+    }
+  }
+
+  async function updateMemberAttribute(
+    memberId: string,
+    attributeId: string,
+    input: MemberAttributeUpdateInput,
+  ): Promise<Member | null> {
+    clearFeedback();
+    setAsyncState("saving", true);
+
+    try {
+      const updated = await updateMemberAttributeRequest(memberId, attributeId, input);
+      upsertMember(updated);
+      selectedMember.value = updated;
+      successMessage.value = "Attributo aggiornato correttamente.";
+      return updated;
+    } catch (error) {
+      errorMessage.value = toMessage(error, "Non e stato possibile aggiornare l'attributo.");
+      return null;
+    } finally {
+      setAsyncState("saving", false);
+    }
+  }
+
+  async function deleteMemberAttribute(memberId: string, attributeId: string): Promise<boolean> {
+    clearFeedback();
+    setAsyncState("deleting", true);
+
+    try {
+      const updated = await deleteMemberAttributeRequest(memberId, attributeId);
+      upsertMember(updated);
+      selectedMember.value = updated;
+      successMessage.value = "Attributo eliminato correttamente.";
+      return true;
+    } catch (error) {
+      errorMessage.value = toMessage(error, "Non e stato possibile eliminare l'attributo.");
+      return false;
+    } finally {
+      setAsyncState("deleting", false);
+    }
+  }
+
   return {
     members: readonly(orderedMembers),
     selectedMember: readonly(selectedMember),
@@ -201,14 +265,17 @@ export function useMembers() {
     isDeleting: readonly(isDeleting),
     errorMessage: readonly(errorMessage),
     successMessage: readonly(successMessage),
+    addMemberAttribute,
     clearFeedback,
     clearSelection,
     createMember,
     deleteMember,
+    deleteMemberAttribute,
     loadMember,
     loadMembers,
     removeMember,
     updateMember,
+    updateMemberAttribute,
     upsertMember,
   };
 }
