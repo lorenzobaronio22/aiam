@@ -39,4 +39,24 @@ describe("router", () => {
 
     expect(router.currentRoute.value.path).toBe("/");
   });
+
+  it("resolves the attribute types catalog route", async () => {
+    const router = createTestRouter("/");
+    await router.isReady();
+
+    await router.push("/attribute-types");
+
+    expect(router.currentRoute.value.name).toBe("attribute-types");
+    expect(router.currentRoute.value.path).toBe("/attribute-types");
+  });
+
+  it("resolves the attribute definitions management route", async () => {
+    const router = createTestRouter("/");
+    await router.isReady();
+
+    await router.push("/attribute-definitions");
+
+    expect(router.currentRoute.value.name).toBe("attribute-definitions");
+    expect(router.currentRoute.value.path).toBe("/attribute-definitions");
+  });
 });

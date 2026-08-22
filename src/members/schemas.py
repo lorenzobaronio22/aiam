@@ -32,6 +32,7 @@ class MemberIn(ApiModel):
     name: str
     email: EmailStr
     identifiers: list[MemberIdentifier] = []
+    attributes: dict[str, str] = {}
 
     @field_validator("identifiers")
     @classmethod
@@ -41,11 +42,19 @@ class MemberIn(ApiModel):
         return _reject_duplicate_identifier_types(identifiers)
 
 
+class MemberAttributeValueOut(ApiModel):
+    definition_id: str
+    key: str
+    label: str
+    value: str
+
+
 class MemberOut(ApiModel):
     id: str
     name: str
     email: str
     identifiers: list[MemberIdentifier] = []
+    attributes: list[MemberAttributeValueOut] = []
     created_at: str
     updated_at: str
 
@@ -54,6 +63,9 @@ class MemberUpdate(ApiModel):
     name: str | None = None
     email: EmailStr | None = None
     identifiers: list[MemberIdentifier] | None = None
+    # None means "leave unchanged"; a dict upserts only the given definition ids,
+    # so hidden values of soft-deleted definitions are preserved.
+    attributes: dict[str, str] | None = None
 
     @field_validator("identifiers")
     @classmethod

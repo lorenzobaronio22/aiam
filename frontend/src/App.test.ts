@@ -21,11 +21,23 @@ describe("App", () => {
     expect(wrapper.find(".app-shell__nav").exists()).toBe(true);
     expect(wrapper.text()).toContain("Home");
     expect(wrapper.text()).toContain("Membri");
+    expect(wrapper.text()).toContain("Tipi di attributo");
+    expect(wrapper.text()).toContain("Attributi");
     expect(wrapper.find(".app-shell__nav-link--active").text()).toContain("Home");
 
     await router.push("/member");
     await wrapper.vm.$nextTick();
 
     expect(wrapper.find(".app-shell__nav-link--active").text()).toContain("Membri");
+
+    await router.push("/attribute-types");
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(".app-shell__nav-link--active").text()).toContain("Tipi di attributo");
+
+    await router.push("/attribute-definitions");
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(".app-shell__nav-link--active").text()).toContain("Attributi");
   });
 });

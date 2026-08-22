@@ -10,6 +10,14 @@ function bodyWrapper(): DOMWrapper<HTMLElement> {
   return new DOMWrapper(document.body);
 }
 
+const attributeDefinitionsApiMocks = vi.hoisted(() => ({
+  listAttributeDefinitions: vi.fn(),
+}));
+
+vi.mock("../api/attributeDefinitions", () => ({
+  listAttributeDefinitions: attributeDefinitionsApiMocks.listAttributeDefinitions,
+}));
+
 const membersApiMocks = vi.hoisted(() => {
   class ApiError extends Error {
     status: number;
@@ -63,6 +71,8 @@ async function factory(initialPath = "/member") {
 describe("MembersPage", () => {
   beforeEach(() => {
     installFakeEventSource();
+    attributeDefinitionsApiMocks.listAttributeDefinitions.mockReset();
+    attributeDefinitionsApiMocks.listAttributeDefinitions.mockResolvedValue([]);
     membersApiMocks.listMembers.mockReset();
     membersApiMocks.getMember.mockReset();
     membersApiMocks.createMember.mockReset();
@@ -111,6 +121,7 @@ describe("MembersPage", () => {
       name: "Giulia Bianchi",
       email: "giulia@example.com",
       identifiers: [],
+      attributes: {},
     });
     expect(bodyWrapper().text()).toContain("Modifiche salvate con successo.");
     expect(router.currentRoute.value.path).toBe("/member");
@@ -181,6 +192,7 @@ describe("MembersPage", () => {
       name: "Laura Neri",
       email: "laura@example.com",
       identifiers: [],
+      attributes: {},
     });
     expect(bodyWrapper().text()).toContain("Nuovo membro salvato correttamente.");
     expect(router.currentRoute.value.path).toBe("/member");
@@ -190,7 +202,7 @@ describe("MembersPage", () => {
   it("shows the duplicate identifier error and keeps the create sheet open", async () => {
     membersApiMocks.listMembers.mockResolvedValue([]);
     membersApiMocks.createMember.mockRejectedValue(
-      new membersApiMocks.ApiError(409, "Conflict", "duplicate"),
+      new membersApiMocks.ApiError(409, "Conflict", "A member with tax_id 'RSSMRA80A01H501U' already exists."),
     );
 
     const { wrapper, router } = await factory();
@@ -204,7 +216,7 @@ describe("MembersPage", () => {
     await bodyWrapper().get(".members-page__sheet form").trigger("submit");
     await flushPromises();
 
-    expect(bodyWrapper().text()).toContain("Esiste gia un membro con questo codice fiscale.");
+    expect(bodyWrapper().text()).toContain("A member with tax_id 'RSSMRA80A01H501U' already exists.");
     expect(router.currentRoute.value.path).toBe("/member/new");
     expect(bodyWrapper().find(".members-page__sheet").exists()).toBe(true);
   });

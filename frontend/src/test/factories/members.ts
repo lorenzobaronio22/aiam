@@ -7,6 +7,7 @@ const DEFAULT_MEMBER: Member = {
   name: "Giulia Rossi",
   email: "giulia@example.com",
   identifiers: [],
+  attributes: [],
   createdAt: "2026-08-02T08:00:00Z",
   updatedAt: "2026-08-02T08:00:00Z",
 };

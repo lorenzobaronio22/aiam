@@ -1,8 +1,15 @@
 import uuid
 
+from src.attribute_definitions import service as attribute_definitions_service
+from src.attribute_types import registry as attribute_types_registry
 from src.members import utils
 from src.members.events import broadcaster
-from src.members.exceptions import DuplicateMemberIdentifier, MemberNotFound
+from src.members.exceptions import (
+    DuplicateMemberIdentifier,
+    InvalidAttributeValue,
+    MemberNotFound,
+    UnknownAttributeDefinition,
+)
 from src.members.schemas import MemberIdentifier, MemberIn, MemberOut, MemberUpdate
 
 
@@ -18,14 +25,33 @@ def _check_identifiers_available(
             raise DuplicateMemberIdentifier(identifier.type, identifier.value)
 
 
+async def _validate_attribute_values(attributes: dict[str, str]) -> None:
+    active_definitions = {
+        definition.id: definition
+        for definition in await attribute_definitions_service.list_active_definitions()
+    }
+
+    for definition_id, value in attributes.items():
+        definition = active_definitions.get(definition_id)
+        if definition is None:
+            raise UnknownAttributeDefinition(definition_id)
+
+        try:
+            attribute_types_registry.validate_attribute_value(definition.key, value)
+        except ValueError as error:
+            raise InvalidAttributeValue(str(error)) from error
+
+
 async def list_members() -> list[MemberOut]:
     data = await utils.load()
-    return [utils.to_member_out(record) for record in data.values()]
+    active_definitions = await attribute_definitions_service.list_active_definitions()
+    return [utils.to_member_out(record, active_definitions) for record in data.values()]
 
 
 async def create_member(payload: MemberIn) -> MemberOut:
     data = await utils.load()
     _check_identifiers_available(data, payload.identifiers)
+    await _validate_attribute_values(payload.attributes)
 
     member_id = str(uuid.uuid7())
     now = utils.now_iso()
@@ -34,12 +60,14 @@ async def create_member(payload: MemberIn) -> MemberOut:
         "name": payload.name,
         "email": str(payload.email),
         "identifiers": [identifier.model_dump() for identifier in payload.identifiers],
+        "attribute_values": dict(payload.attributes),
         "created_at": now,
         "updated_at": now,
     }
     data[member_id] = record
     await utils.save(data)
-    member = utils.to_member_out(record)
+    active_definitions = await attribute_definitions_service.list_active_definitions()
+    member = utils.to_member_out(record, active_definitions)
     broadcaster.publish_created(member)
     return member
 
@@ -61,16 +89,23 @@ async def update_member(member_id: str, payload: MemberUpdate) -> MemberOut:
     if payload.identifiers is not None:
         _check_identifiers_available(data, payload.identifiers, exclude_id=member_id)
 
+    if payload.attributes is not None:
+        await _validate_attribute_values(payload.attributes)
+
     if payload.name is not None:
         record["name"] = payload.name
     if payload.email is not None:
         record["email"] = str(payload.email)
     if payload.identifiers is not None:
         record["identifiers"] = [identifier.model_dump() for identifier in payload.identifiers]
+    if payload.attributes is not None:
+        # Upsert only the given definition ids so hidden (soft-deleted) values survive.
+        record.setdefault("attribute_values", {}).update(payload.attributes)
 
     record["updated_at"] = utils.now_iso()
     await utils.save(data)
-    member = utils.to_member_out(record)
+    active_definitions = await attribute_definitions_service.list_active_definitions()
+    member = utils.to_member_out(record, active_definitions)
     broadcaster.publish_updated(member)
     return member
 

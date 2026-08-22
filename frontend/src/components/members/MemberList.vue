@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, watch } from "vue";
 
+import type { AttributeDefinition } from "../../types/attributeDefinitions";
 import type { Member } from "../../types/members";
 import { formatDateTime, getInitials } from "../../utils/formatters";
 import MemberForm from "./MemberForm.vue";
@@ -12,9 +13,15 @@ const props = defineProps<{
   isLoadingDetail: boolean;
   isSaving: boolean;
   isDeleting: boolean;
+  activeDefinitions: readonly AttributeDefinition[];
 }>();
 
-const draft = defineModel<{ name: string; email: string; taxId: string }>("draft", { required: true });
+const draft = defineModel<{
+  name: string;
+  email: string;
+  taxId: string;
+  attributes: Record<string, string>;
+}>("draft", { required: true });
 
 const emit = defineEmits<{
   select: [memberId: string];
@@ -95,6 +102,7 @@ watch(
             <MemberForm
               v-if="activeMemberId === member.id"
               v-model="draft"
+              :active-definitions="activeDefinitions"
               :is-deleting="isDeleting"
               :is-loading-detail="isLoadingDetail"
               :is-saving="isSaving"
@@ -266,6 +274,13 @@ watch(
   overflow: hidden;
   min-height: 0;
   padding: 0 1.1rem 1.1rem;
+}
+
+.member-card__attributes-link {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 @media (min-width: 640px) {

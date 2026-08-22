@@ -1,6 +1,7 @@
 import type {
   Member,
   MemberApiPayload,
+  MemberAttributeValueApiPayload,
   MemberIdentifier,
   MemberInput,
   ProblemResponse,
@@ -76,6 +77,31 @@ function toMemberIdentifiers(payload: unknown): MemberIdentifier[] {
   return payload.map(toMemberIdentifier);
 }
 
+function toMemberAttribute(value: unknown): MemberAttributeValueApiPayload {
+  if (!isRecord(value)) {
+    throw new Error("Invalid member payload: expected attribute object.");
+  }
+
+  return {
+    definition_id: readRequiredString(value.definition_id, "attribute definition_id"),
+    key: readRequiredString(value.key, "attribute key"),
+    label: readRequiredString(value.label, "attribute label"),
+    value: readString(value.value),
+  };
+}
+
+function toMemberAttributes(payload: unknown): MemberAttributeValueApiPayload[] {
+  if (payload === undefined || payload === null) {
+    return [];
+  }
+
+  if (!Array.isArray(payload)) {
+    throw new Error("Invalid member payload: expected attributes array.");
+  }
+
+  return payload.map(toMemberAttribute);
+}
+
 export function toMemberPayload(payload: unknown): MemberApiPayload {
   if (!isRecord(payload)) {
     throw new Error("Invalid member payload: expected object.");
@@ -86,6 +112,7 @@ export function toMemberPayload(payload: unknown): MemberApiPayload {
     name: readRequiredString(payload.name, "name"),
     email: readRequiredString(payload.email, "email"),
     identifiers: toMemberIdentifiers(payload.identifiers),
+    attributes: toMemberAttributes(payload.attributes),
     created_at: readRequiredString(payload.created_at, "created_at"),
     updated_at: readRequiredString(payload.updated_at, "updated_at"),
   };
@@ -105,6 +132,12 @@ export function toMember(payload: MemberApiPayload): Member {
     name: payload.name,
     email: payload.email,
     identifiers: payload.identifiers,
+    attributes: payload.attributes.map((attribute) => ({
+      definitionId: attribute.definition_id,
+      key: attribute.key,
+      label: attribute.label,
+      value: attribute.value,
+    })),
     createdAt: payload.created_at,
     updatedAt: payload.updated_at,
   };

@@ -33,6 +33,20 @@ const route = useRoute();
         >
           Membri
         </RouterLink>
+        <RouterLink
+          class="app-shell__nav-link"
+          :class="{ 'app-shell__nav-link--active': route.path.startsWith('/attribute-types') }"
+          to="/attribute-types"
+        >
+          Tipi di attributo
+        </RouterLink>
+        <RouterLink
+          class="app-shell__nav-link"
+          :class="{ 'app-shell__nav-link--active': route.path.startsWith('/attribute-definitions') }"
+          to="/attribute-definitions"
+        >
+          Attributi
+        </RouterLink>
       </nav>
     </header>
 

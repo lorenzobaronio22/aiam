@@ -37,11 +37,25 @@ async def http_exception_handler(request: Request, exc: Exception) -> JSONRespon
     return problem(exc.status_code, exc.detail or "HTTP Error", str(exc.detail or ""))
 
 
+def _serialize_validation_errors(errors: list[dict]) -> list[dict]:
+    """`RequestValidationError.errors()` may embed raw exception instances (e.g.
+    under `ctx.error` for a field_validator's `ValueError`), which aren't JSON
+    serializable as-is. Stringify them so the response body can be encoded."""
+    serialized = []
+    for error in errors:
+        error = dict(error)
+        ctx = error.get("ctx")
+        if isinstance(ctx, dict) and isinstance(ctx.get("error"), Exception):
+            error["ctx"] = {**ctx, "error": str(ctx["error"])}
+        serialized.append(error)
+    return serialized
+
+
 async def validation_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, RequestValidationError)
     return problem(
         status.HTTP_422_UNPROCESSABLE_ENTITY,
         "Validation Error",
         "Request validation failed.",
-        errors=exc.errors(),
+        errors=_serialize_validation_errors(exc.errors()),
     )

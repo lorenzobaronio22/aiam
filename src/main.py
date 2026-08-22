@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from src.attribute_definitions.router import router as attribute_definitions_router
+from src.attribute_types.router import router as attribute_types_router
 from src.exceptions import (
     ProblemError,
     http_exception_handler,
@@ -25,5 +27,7 @@ async def healthcheck():
 
 
 app.include_router(members_router)
+app.include_router(attribute_types_router)
+app.include_router(attribute_definitions_router)
 
 app.frontend("/app", directory="dist")

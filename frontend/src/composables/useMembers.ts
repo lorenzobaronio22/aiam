@@ -24,6 +24,7 @@ function normalizeInput(input: MemberInput): MemberInput {
       ...identifier,
       value: identifier.value.trim(),
     })),
+    attributes: input.attributes,
   };
 }
 
@@ -33,7 +34,7 @@ function toMessage(error: unknown, fallback: string): string {
   }
 
   if (error.status === 409) {
-    return "Esiste gia un membro con questo codice fiscale. Verifica il valore inserito.";
+    return error.detail || "Esiste gia un membro con questo codice fiscale. Verifica il valore inserito.";
   }
 
   if (error.status === 404) {

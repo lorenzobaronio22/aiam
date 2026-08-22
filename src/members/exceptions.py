@@ -19,3 +19,21 @@ class DuplicateMemberIdentifier(ProblemError):
             title="Conflict",
             detail=f"A member with {identifier_type} '{value}' already exists.",
         )
+
+
+class UnknownAttributeDefinition(ProblemError):
+    def __init__(self, definition_id: str):
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            title="Validation Error",
+            detail=f"Attribute definition '{definition_id}' does not exist or is not active.",
+        )
+
+
+class InvalidAttributeValue(ProblemError):
+    def __init__(self, detail: str):
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            title="Validation Error",
+            detail=detail,
+        )

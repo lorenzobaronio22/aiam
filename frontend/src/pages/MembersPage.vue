@@ -4,6 +4,7 @@ import MemberList from "../components/members/MemberList.vue";
 import { useMembersPageController } from "../composables/useMembersPageController";
 
 const {
+  activeDefinitions,
   activeMemberId,
   clearToasts,
   handleClose,
@@ -51,6 +52,7 @@ const {
 
     <MemberList
       v-model:draft="memberDraft"
+      :active-definitions="activeDefinitions"
       :active-member-id="activeMemberId"
       :is-deleting="isDeleting"
       :is-loading="isLoadingList"
@@ -94,6 +96,7 @@ const {
 
           <MemberForm
             v-model="memberDraft"
+            :active-definitions="activeDefinitions"
             :is-deleting="isDeleting"
             :is-loading-detail="false"
             :is-saving="isSaving"

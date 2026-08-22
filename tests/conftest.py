@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from src.attribute_definitions import constants as attribute_definitions_constants
+from src.attribute_definitions import utils as attribute_definitions_utils
 from src.main import app
 from src.members import constants, utils
 
@@ -41,3 +43,24 @@ def temp_member_store(tmp_path: Path) -> Path:
         constants.DATA_DIR = original_dir
         constants.DATA_FILE = original_file
         utils._store_lock = original_lock
+
+
+@pytest.fixture
+def temp_attribute_definitions_store(tmp_path: Path) -> Path:
+    data_dir = tmp_path / "data"
+    data_file = data_dir / "attribute_definitions.json"
+
+    original_dir = attribute_definitions_constants.DATA_DIR
+    original_file = attribute_definitions_constants.DATA_FILE
+    original_lock = attribute_definitions_utils._store_lock
+
+    attribute_definitions_constants.DATA_DIR = data_dir
+    attribute_definitions_constants.DATA_FILE = data_file
+    attribute_definitions_utils._store_lock = DummyLock()
+
+    try:
+        yield data_file
+    finally:
+        attribute_definitions_constants.DATA_DIR = original_dir
+        attribute_definitions_constants.DATA_FILE = original_file
+        attribute_definitions_utils._store_lock = original_lock
