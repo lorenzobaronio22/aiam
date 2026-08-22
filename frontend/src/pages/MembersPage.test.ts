@@ -10,6 +10,14 @@ function bodyWrapper(): DOMWrapper<HTMLElement> {
   return new DOMWrapper(document.body);
 }
 
+const attributeDefinitionsApiMocks = vi.hoisted(() => ({
+  listAttributeDefinitions: vi.fn(),
+}));
+
+vi.mock("../api/attributeDefinitions", () => ({
+  listAttributeDefinitions: attributeDefinitionsApiMocks.listAttributeDefinitions,
+}));
+
 const membersApiMocks = vi.hoisted(() => {
   class ApiError extends Error {
     status: number;
@@ -63,6 +71,8 @@ async function factory(initialPath = "/member") {
 describe("MembersPage", () => {
   beforeEach(() => {
     installFakeEventSource();
+    attributeDefinitionsApiMocks.listAttributeDefinitions.mockReset();
+    attributeDefinitionsApiMocks.listAttributeDefinitions.mockResolvedValue([]);
     membersApiMocks.listMembers.mockReset();
     membersApiMocks.getMember.mockReset();
     membersApiMocks.createMember.mockReset();
