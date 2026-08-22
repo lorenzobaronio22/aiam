@@ -1,61 +1,90 @@
-# Scenarios: Manage a member's attributes
+# Scenarios: Manage attribute definitions across all members
 
 Gherkin scenarios for
-[US-02: Manage a member's attributes](../user-stories/US-02-manage-member-attributes.md).
+[US-02: Manage attribute definitions across all members](../user-stories/US-02-manage-member-attributes.md).
 Each scenario maps 1:1 to an acceptance criterion already listed in that
 story — no additional edge cases have been added here.
 
 ```gherkin
-Feature: Manage a member's attributes
+Feature: Manage attribute definitions across all members
   As a user of the members app
-  I want to add, edit, and remove attributes on a specific member, choosing the attribute type and a label for each one
-  So that I can enrich a member's record with additional, freeform information beyond name/email
+  I want to define, edit, and reversibly delete attribute definitions that apply to every member, choosing an attribute type and a label for each one
+  So that I can extend the shared member data model with additional, freeform fields beyond name/email, without touching code
 
-  Scenario: Adding a new attribute to a member
+  Scenario: Creating a new attribute definition
     Given the attribute type catalog contains one or more attribute types
-    When a user adds a new attribute to a member, choosing an attribute type, a label, and a value
-    Then the attribute is added to that member
-    And it is shown with its chosen label and value
+    When a user creates a new attribute definition, choosing an attribute type and a label
+    Then the definition is created
+    And a field for it becomes available on every member's form
 
-  Scenario: Adding multiple attributes of the same type
-    Given a member already has one or more attributes of a given attribute type
-    When a user adds another attribute of that same type to the member
-    Then it is added as a separate, distinct attribute
-    And there is no limit on how many attributes of the same type the member can have
+  Scenario: Creating multiple definitions of the same type
+    Given one or more attribute definitions of a given attribute type already exist
+    When a user creates another definition of that same type
+    Then it is created as a separate, distinct definition
+    And there is no limit on how many definitions of the same type may exist
 
   Scenario: Label is mandatory
-    Given a user is adding or editing an attribute on a member
+    Given a user is creating or editing an attribute definition
     When they leave the label blank
-    Then the attribute is rejected
+    Then the definition is rejected
     And they see a clear validation error explaining the label is mandatory
 
-  Scenario: Labels must be unique within a member
-    Given a member already has an attribute with a certain label
-    When a user tries to add or rename another attribute on that member to the same label
+  Scenario: Labels must be unique among active definitions
+    Given an active attribute definition already has a certain label
+    When a user tries to create or rename another active definition to that same label
     Then the action is rejected
-    And they see a clear error explaining the label is already in use on that member
+    And they see a clear error explaining the label is already in use
 
-  Scenario: Editing an existing attribute
-    Given a member has an existing attribute
-    When a user edits its label and/or its value
-    Then the attribute is updated with the new label and/or value
+  Scenario: Reusing the label of a soft-deleted definition
+    Given an attribute definition with a certain label has been soft-deleted
+    When a user creates a new definition using that same label
+    Then the new definition is created successfully
+
+  Scenario: Editing an attribute definition's label
+    Given an existing attribute definition
+    When a user edits its label
+    Then the definition is updated with the new label
     And its attribute type remains unchanged
 
-  Scenario: Removing an existing attribute
-    Given a member has an existing attribute
-    When a user removes it
-    Then it is deleted immediately
-    And no confirmation step is required
+  Scenario: Soft-deleting an attribute definition
+    Given an existing attribute definition
+    When a user deletes it
+    Then it is soft-deleted immediately, without a confirmation step
+    And its field disappears from every member's form
+    And any values members had entered for it are hidden from users, without being discarded
+
+  Scenario: Restoring a soft-deleted attribute definition
+    Given a soft-deleted attribute definition
+    When a user restores it
+    Then its field reappears on every member's form
+    And every member's previously stored value for it, if any, reappears as well
+
+  Scenario: Restoring a definition whose label now collides
+    Given a soft-deleted attribute definition whose label now matches a currently active definition's label
+    When a user tries to restore it
+    Then the restore is rejected
+    And they see a clear error explaining the label conflict
+
+  Scenario: Viewing the attribute definitions list
+    Given one or more active and deleted attribute definitions exist
+    When a user views the attribute definitions list page
+    Then they see every definition along with its status, active or deleted
 
   Scenario: Attribute value violates its type's validation rule
     Given an attribute type has a validation rule, such as Free Text Note's 1000-character maximum
-    When a user adds or edits a value that violates that rule
+    When a member's value for that definition violates the rule
     Then the backend rejects the value
     And they see a clear validation error
 
-  Scenario: Attributes are displayed in insertion order
-    Given a member has multiple attributes added at different times
-    When their attributes are displayed
-    Then they appear in the order they were added
+  Scenario: Attribute values are optional
+    Given a member's form with one or more active attribute definitions
+    When a user fills in the form
+    Then they may leave any attribute definition's value blank
+
+  Scenario: Attribute definitions are displayed in insertion order
+    Given multiple attribute definitions created at different times
+    When they are displayed, on the definitions list page or as fields on a member's form
+    Then they appear in the order they were defined
     And this order does not depend on their attribute type
 ```
+
