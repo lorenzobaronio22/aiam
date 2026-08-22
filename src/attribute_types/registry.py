@@ -37,7 +37,9 @@ _REGISTRY_BY_KEY = {definition.key: definition for definition in ATTRIBUTE_TYPE_
 
 def list_attribute_types() -> list[AttributeTypeOut]:
     return [
-        AttributeTypeOut(key=definition.key, name=definition.name, description=definition.description)
+        AttributeTypeOut(
+            key=definition.key, name=definition.name, description=definition.description
+        )
         for definition in ATTRIBUTE_TYPE_REGISTRY
     ]
 

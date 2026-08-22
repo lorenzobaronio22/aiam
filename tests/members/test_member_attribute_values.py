@@ -144,7 +144,11 @@ async def test_update_member_preserves_hidden_value_of_soft_deleted_definition(
     # The form only knows about active definitions, so it only resends the visible one.
     await client.put(
         f"/members/{member_id}",
-        json={"name": "Jane Smith", "email": "jane@example.com", "attributes": {kept_id: "Peanuts"}},
+        json={
+            "name": "Jane Smith",
+            "email": "jane@example.com",
+            "attributes": {kept_id: "Peanuts"},
+        },
     )
 
     await client.post(f"/attribute-definitions/{hidden_id}/restore")

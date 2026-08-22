@@ -17,7 +17,9 @@ async def test_create_attribute_definition(client, temp_attribute_definitions_st
 
 
 @pytest.mark.anyio
-async def test_create_multiple_definitions_of_the_same_type(client, temp_attribute_definitions_store):
+async def test_create_multiple_definitions_of_the_same_type(
+    client, temp_attribute_definitions_store
+):
     first = await client.post(
         "/attribute-definitions", json={"key": "free_text_note", "label": "Allergies"}
     )
@@ -50,7 +52,9 @@ async def test_create_rejects_unknown_attribute_type(client, temp_attribute_defi
 
 @pytest.mark.anyio
 async def test_create_rejects_duplicate_active_label(client, temp_attribute_definitions_store):
-    await client.post("/attribute-definitions", json={"key": "free_text_note", "label": "Allergies"})
+    await client.post(
+        "/attribute-definitions", json={"key": "free_text_note", "label": "Allergies"}
+    )
 
     duplicate = await client.post(
         "/attribute-definitions", json={"key": "free_text_note", "label": "Allergies"}
@@ -94,7 +98,9 @@ async def test_edit_definition_updates_label_only(client, temp_attribute_definit
 
 @pytest.mark.anyio
 async def test_edit_rejects_duplicate_active_label(client, temp_attribute_definitions_store):
-    await client.post("/attribute-definitions", json={"key": "free_text_note", "label": "Allergies"})
+    await client.post(
+        "/attribute-definitions", json={"key": "free_text_note", "label": "Allergies"}
+    )
     other = await client.post(
         "/attribute-definitions", json={"key": "free_text_note", "label": "Emergency contact"}
     )
@@ -141,7 +147,9 @@ async def test_restore_rejects_on_label_collision(client, temp_attribute_definit
     definition_id = created.json()["id"]
     await client.delete(f"/attribute-definitions/{definition_id}")
 
-    await client.post("/attribute-definitions", json={"key": "free_text_note", "label": "Allergies"})
+    await client.post(
+        "/attribute-definitions", json={"key": "free_text_note", "label": "Allergies"}
+    )
 
     response = await client.post(f"/attribute-definitions/{definition_id}/restore")
 
@@ -167,7 +175,9 @@ async def test_list_shows_active_and_deleted_with_status(client, temp_attribute_
 
 
 @pytest.mark.anyio
-async def test_definitions_are_displayed_in_insertion_order(client, temp_attribute_definitions_store):
+async def test_definitions_are_displayed_in_insertion_order(
+    client, temp_attribute_definitions_store
+):
     first = await client.post(
         "/attribute-definitions", json={"key": "free_text_note", "label": "Allergies"}
     )
