@@ -1,18 +1,25 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import { useAttributeDefinitions } from "./useAttributeDefinitions";
 import { useMemberEvents } from "./useMemberEvents";
 import { useMembers } from "./useMembers";
 import { useToastMessages } from "./useToastMessages";
 import type { MemberInput } from "../types/members";
 
-function draftToInput(draft: { name: string; email: string; taxId: string }): MemberInput {
+function draftToInput(draft: {
+  name: string;
+  email: string;
+  taxId: string;
+  attributes: Record<string, string>;
+}): MemberInput {
   const taxId = draft.taxId.trim();
 
   return {
     name: draft.name,
     email: draft.email,
     identifiers: taxId ? [{ type: "tax_id", country: "IT", value: taxId }] : [],
+    attributes: { ...draft.attributes },
   };
 }
 
@@ -21,6 +28,7 @@ export function useMembersPageController() {
     name: "",
     email: "",
     taxId: "",
+    attributes: {} as Record<string, string>,
   });
 
   const {
@@ -42,6 +50,8 @@ export function useMembersPageController() {
     updateMember,
     upsertMember,
   } = useMembers();
+
+  const { activeDefinitions, loadDefinitions } = useAttributeDefinitions();
 
   const memberEvents = useMemberEvents({
     onCreated: upsertMember,
@@ -68,10 +78,18 @@ export function useMembersPageController() {
   watch(
     selectedMember,
     (member) => {
+      const attributes: Record<string, string> = {};
+
+      for (const definition of activeDefinitions.value) {
+        attributes[definition.id] =
+          member?.attributes.find((attribute) => attribute.definitionId === definition.id)?.value ?? "";
+      }
+
       memberDraft.value = {
         name: member?.name ?? "",
         email: member?.email ?? "",
         taxId: member?.identifiers.find((identifier) => identifier.type === "tax_id")?.value ?? "",
+        attributes,
       };
     },
     { immediate: true },
@@ -79,6 +97,7 @@ export function useMembersPageController() {
 
   onMounted(() => {
     void loadMembers();
+    void loadDefinitions();
     memberEvents.start();
   });
 
@@ -163,6 +182,7 @@ export function useMembersPageController() {
   }
 
   return {
+    activeDefinitions,
     activeMemberId,
     clearToasts,
     handleClose,

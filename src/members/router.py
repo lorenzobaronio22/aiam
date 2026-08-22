@@ -7,14 +7,7 @@ from fastapi.sse import EventSourceResponse, ServerSentEvent
 from src.members import service
 from src.members.dependencies import MemberDep
 from src.members.events import broadcaster
-from src.members.schemas import (
-    MemberAttributeIn,
-    MemberAttributeUpdate,
-    MemberEventPayload,
-    MemberIn,
-    MemberOut,
-    MemberUpdate,
-)
+from src.members.schemas import MemberEventPayload, MemberIn, MemberOut, MemberUpdate
 
 router = APIRouter(tags=["members"])
 
@@ -57,24 +50,3 @@ async def patch_member(member_id: str, body: MemberUpdate) -> MemberOut:
 async def delete_member(member_id: str) -> Response:
     await service.delete_member(member_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@router.post(
-    "/members/{member_id}/attributes",
-    response_model=MemberOut,
-    status_code=status.HTTP_201_CREATED,
-)
-async def add_member_attribute(member_id: str, body: MemberAttributeIn) -> MemberOut:
-    return await service.add_member_attribute(member_id, body)
-
-
-@router.put("/members/{member_id}/attributes/{attribute_id}", response_model=MemberOut)
-async def update_member_attribute(
-    member_id: str, attribute_id: str, body: MemberAttributeUpdate
-) -> MemberOut:
-    return await service.update_member_attribute(member_id, attribute_id, body)
-
-
-@router.delete("/members/{member_id}/attributes/{attribute_id}", response_model=MemberOut)
-async def delete_member_attribute(member_id: str, attribute_id: str) -> MemberOut:
-    return await service.delete_member_attribute(member_id, attribute_id)

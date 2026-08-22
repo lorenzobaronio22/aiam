@@ -6,14 +6,15 @@ import {
   type RouteRecordRaw,
 } from "vue-router";
 
+import AttributeDefinitionsPage from "./pages/AttributeDefinitionsPage.vue";
 import AttributeTypesPage from "./pages/AttributeTypesPage.vue";
 import LandingPage from "./pages/LandingPage.vue";
-import MemberAttributesPage from "./pages/MemberAttributesPage.vue";
 import MembersPage from "./pages/MembersPage.vue";
 
 const HOME_PATH = "/";
 const MEMBER_PATH = "/member";
 const ATTRIBUTE_TYPES_PATH = "/attribute-types";
+const ATTRIBUTE_DEFINITIONS_PATH = "/attribute-definitions";
 const LEGACY_MEMBERS_PATH = "/members/:memberId?";
 
 function toMemberPath(memberId: unknown): string {
@@ -34,11 +35,6 @@ export const routes: RouteRecordRaw[] = [
     component: MembersPage,
   },
   {
-    path: `${MEMBER_PATH}/:memberId/attributes`,
-    name: "member-attributes",
-    component: MemberAttributesPage,
-  },
-  {
     path: `${MEMBER_PATH}/:memberId?`,
     name: "member",
     component: MembersPage,
@@ -47,6 +43,11 @@ export const routes: RouteRecordRaw[] = [
     path: ATTRIBUTE_TYPES_PATH,
     name: "attribute-types",
     component: AttributeTypesPage,
+  },
+  {
+    path: ATTRIBUTE_DEFINITIONS_PATH,
+    name: "attribute-definitions",
+    component: AttributeDefinitionsPage,
   },
   {
     path: LEGACY_MEMBERS_PATH,

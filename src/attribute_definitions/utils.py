@@ -2,7 +2,7 @@ import asyncio
 import json
 from datetime import UTC, datetime
 
-from src.members import constants
+from src.attribute_definitions import constants
 
 _store_lock = asyncio.Lock()
 
@@ -11,46 +11,22 @@ def now_iso() -> str:
     return datetime.now(UTC).isoformat()
 
 
-def to_member_out(record: dict, active_definitions: list):
-    from src.members.schemas import MemberOut
+def to_definition_out(record: dict):
+    from src.attribute_definitions.schemas import AttributeDefinitionOut
 
-    attribute_values = record.get("attribute_values", {})
-    attributes = [
-        {
-            "definition_id": definition.id,
-            "key": definition.key,
-            "label": definition.label,
-            "value": attribute_values.get(definition.id, ""),
-        }
-        for definition in active_definitions
-    ]
-
-    return MemberOut(
+    return AttributeDefinitionOut(
         id=record["id"],
-        name=record["name"],
-        email=record["email"],
-        identifiers=record.get("identifiers", []),
-        attributes=attributes,
+        key=record["key"],
+        label=record["label"],
+        status=record["status"],
         created_at=record["created_at"],
         updated_at=record["updated_at"],
     )
 
 
-def identifier_exists(
-    data: dict[str, dict],
-    identifier_type: str,
-    country: str,
-    value: str,
-    exclude_id: str | None = None,
-) -> bool:
-    return any(
-        record["id"] != exclude_id
-        and any(
-            existing["type"] == identifier_type
-            and existing["country"] == country
-            and existing["value"] == value
-            for existing in record.get("identifiers", [])
-        )
+def label_available(data: dict[str, dict], label: str, exclude_id: str | None = None) -> bool:
+    return not any(
+        record["id"] != exclude_id and record["status"] == "active" and record["label"] == label
         for record in data.values()
     )
 

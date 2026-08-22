@@ -21,21 +21,12 @@ class DuplicateMemberIdentifier(ProblemError):
         )
 
 
-class UnknownAttributeType(ProblemError):
-    def __init__(self, key: str):
+class UnknownAttributeDefinition(ProblemError):
+    def __init__(self, definition_id: str):
         super().__init__(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             title="Validation Error",
-            detail=f"Attribute type '{key}' does not exist.",
-        )
-
-
-class DuplicateAttributeLabel(ProblemError):
-    def __init__(self, label: str):
-        super().__init__(
-            status_code=status.HTTP_409_CONFLICT,
-            title="Conflict",
-            detail=f"An attribute with label '{label}' already exists on this member.",
+            detail=f"Attribute definition '{definition_id}' does not exist or is not active.",
         )
 
 
@@ -45,13 +36,4 @@ class InvalidAttributeValue(ProblemError):
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             title="Validation Error",
             detail=detail,
-        )
-
-
-class AttributeNotFound(ProblemError):
-    def __init__(self, attribute_id: str):
-        super().__init__(
-            status_code=status.HTTP_404_NOT_FOUND,
-            title="Not Found",
-            detail=f"Attribute with id '{attribute_id}' not found.",
         )

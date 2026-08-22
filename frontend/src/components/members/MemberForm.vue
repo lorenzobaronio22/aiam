@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
+import type { AttributeDefinition } from "../../types/attributeDefinitions";
+
 const model = defineModel<{
   name: string;
   email: string;
   taxId: string;
+  attributes: Record<string, string>;
 }>({ required: true });
 
 const props = defineProps<{
@@ -12,6 +15,7 @@ const props = defineProps<{
   isLoadingDetail: boolean;
   isSaving: boolean;
   isDeleting: boolean;
+  activeDefinitions: readonly AttributeDefinition[];
 }>();
 
 const isBusy = computed(() => props.isLoadingDetail || props.isSaving || props.isDeleting);
@@ -90,6 +94,19 @@ watch(
           type="text"
         />
       </label>
+
+      <label
+        v-for="definition in props.activeDefinitions"
+        :key="definition.id"
+        class="member-form__field"
+      >
+        <span class="member-form__field-label">{{ definition.label }}</span>
+        <textarea
+          v-model="model.attributes[definition.id]"
+          :disabled="isBusy"
+          rows="3"
+        ></textarea>
+      </label>
     </div>
 
     <div class="member-form__actions">
@@ -145,25 +162,30 @@ watch(
   color: var(--color-muted);
 }
 
-.member-form__field > input {
+.member-form__field > input,
+.member-form__field > textarea {
   border: 1px solid var(--color-border);
   border-radius: 14px;
   background: #ffffff;
   padding: 0.75rem 0.9rem;
   color: inherit;
   font-size: 0.98rem;
+  font-family: inherit;
+  resize: vertical;
   transition:
     border-color 220ms cubic-bezier(0.32, 0.72, 0, 1),
     box-shadow 220ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-.member-form__field > input:focus-visible {
+.member-form__field > input:focus-visible,
+.member-form__field > textarea:focus-visible {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(0, 114, 166, 0.14);
   outline: none;
 }
 
-.member-form__field > input:disabled {
+.member-form__field > input:disabled,
+.member-form__field > textarea:disabled {
   background: #f4f4f2;
   color: var(--color-muted);
 }

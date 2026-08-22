@@ -111,6 +111,7 @@ describe("MembersPage", () => {
       name: "Giulia Bianchi",
       email: "giulia@example.com",
       identifiers: [],
+      attributes: {},
     });
     expect(bodyWrapper().text()).toContain("Modifiche salvate con successo.");
     expect(router.currentRoute.value.path).toBe("/member");
@@ -181,6 +182,7 @@ describe("MembersPage", () => {
       name: "Laura Neri",
       email: "laura@example.com",
       identifiers: [],
+      attributes: {},
     });
     expect(bodyWrapper().text()).toContain("Nuovo membro salvato correttamente.");
     expect(router.currentRoute.value.path).toBe("/member");

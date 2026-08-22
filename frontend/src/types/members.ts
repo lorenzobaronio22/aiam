@@ -4,26 +4,15 @@ export interface MemberIdentifier {
   value: string;
 }
 
-export interface MemberAttribute {
-  id: string;
+export interface MemberAttributeValue {
+  definitionId: string;
   key: string;
   label: string;
   value: string;
 }
 
-export interface MemberAttributeInput {
-  key: string;
-  label: string;
-  value: string;
-}
-
-export interface MemberAttributeUpdateInput {
-  label?: string;
-  value?: string;
-}
-
-export interface MemberAttributeApiPayload {
-  id: string;
+export interface MemberAttributeValueApiPayload {
+  definition_id: string;
   key: string;
   label: string;
   value: string;
@@ -34,7 +23,7 @@ export interface Member {
   name: string;
   email: string;
   identifiers: readonly MemberIdentifier[];
-  attributes: readonly MemberAttribute[];
+  attributes: readonly MemberAttributeValue[];
   createdAt: string;
   updatedAt: string;
 }
@@ -43,6 +32,7 @@ export interface MemberInput {
   name: string;
   email: string;
   identifiers: MemberIdentifier[];
+  attributes: Record<string, string>;
 }
 
 export interface MemberApiPayload {
@@ -50,7 +40,7 @@ export interface MemberApiPayload {
   name: string;
   email: string;
   identifiers: MemberIdentifier[];
-  attributes: MemberAttributeApiPayload[];
+  attributes: MemberAttributeValueApiPayload[];
   created_at: string;
   updated_at: string;
 }

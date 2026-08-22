@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, watch } from "vue";
-import { RouterLink } from "vue-router";
 
+import type { AttributeDefinition } from "../../types/attributeDefinitions";
 import type { Member } from "../../types/members";
 import { formatDateTime, getInitials } from "../../utils/formatters";
 import MemberForm from "./MemberForm.vue";
@@ -13,9 +13,15 @@ const props = defineProps<{
   isLoadingDetail: boolean;
   isSaving: boolean;
   isDeleting: boolean;
+  activeDefinitions: readonly AttributeDefinition[];
 }>();
 
-const draft = defineModel<{ name: string; email: string; taxId: string }>("draft", { required: true });
+const draft = defineModel<{
+  name: string;
+  email: string;
+  taxId: string;
+  attributes: Record<string, string>;
+}>("draft", { required: true });
 
 const emit = defineEmits<{
   select: [memberId: string];
@@ -96,6 +102,7 @@ watch(
             <MemberForm
               v-if="activeMemberId === member.id"
               v-model="draft"
+              :active-definitions="activeDefinitions"
               :is-deleting="isDeleting"
               :is-loading-detail="isLoadingDetail"
               :is-saving="isSaving"
@@ -104,14 +111,6 @@ watch(
               @delete="emit('delete')"
               @submit="emit('submit')"
             />
-
-            <RouterLink
-              v-if="activeMemberId === member.id"
-              class="member-card__attributes-link"
-              :to="{ name: 'member-attributes', params: { memberId: member.id } }"
-            >
-              Gestisci attributi
-            </RouterLink>
           </div>
         </div>
       </li>
