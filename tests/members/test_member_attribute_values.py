@@ -15,8 +15,7 @@ async def test_member_can_provide_value_for_active_definition(
     response = await client.post(
         "/members",
         json={
-            "name": "Jane Smith",
-            "email": "jane@example.com",
+          "name": "Jane Smith",
             "attributes": {definition_id: "Peanuts"},
         },
     )
@@ -35,7 +34,7 @@ async def test_member_attribute_value_is_optional(
     definition_id = await _create_definition(client, "Allergies")
 
     response = await client.post(
-        "/members", json={"name": "Jane Smith", "email": "jane@example.com"}
+          "/members", json={"name": "Jane Smith"}
     )
 
     assert response.status_code == 201
@@ -51,8 +50,7 @@ async def test_member_rejects_unknown_definition_id(
     response = await client.post(
         "/members",
         json={
-            "name": "Jane Smith",
-            "email": "jane@example.com",
+          "name": "Jane Smith",
             "attributes": {"missing-definition": "value"},
         },
     )
@@ -69,8 +67,7 @@ async def test_member_rejects_value_violating_type_rule(
     response = await client.post(
         "/members",
         json={
-            "name": "Jane Smith",
-            "email": "jane@example.com",
+          "name": "Jane Smith",
             "attributes": {definition_id: "x" * 1001},
         },
     )
@@ -86,8 +83,7 @@ async def test_soft_deleting_definition_hides_field_and_value(
     member = await client.post(
         "/members",
         json={
-            "name": "Jane Smith",
-            "email": "jane@example.com",
+          "name": "Jane Smith",
             "attributes": {definition_id: "Peanuts"},
         },
     )
@@ -108,8 +104,7 @@ async def test_restoring_definition_reveals_previous_value(
     member = await client.post(
         "/members",
         json={
-            "name": "Jane Smith",
-            "email": "jane@example.com",
+          "name": "Jane Smith",
             "attributes": {definition_id: "Peanuts"},
         },
     )
@@ -132,8 +127,7 @@ async def test_update_member_preserves_hidden_value_of_soft_deleted_definition(
     member = await client.post(
         "/members",
         json={
-            "name": "Jane Smith",
-            "email": "jane@example.com",
+          "name": "Jane Smith",
             "attributes": {kept_id: "Peanuts", hidden_id: "555-0100"},
         },
     )
@@ -145,8 +139,7 @@ async def test_update_member_preserves_hidden_value_of_soft_deleted_definition(
     await client.put(
         f"/members/{member_id}",
         json={
-            "name": "Jane Smith",
-            "email": "jane@example.com",
+          "name": "Jane Smith",
             "attributes": {kept_id: "Peanuts"},
         },
     )
@@ -166,7 +159,7 @@ async def test_member_attributes_displayed_in_insertion_order(
     second_id = await _create_definition(client, "Emergency contact")
 
     response = await client.post(
-        "/members", json={"name": "Jane Smith", "email": "jane@example.com"}
+          "/members", json={"name": "Jane Smith"}
     )
 
     ids = [item["definition_id"] for item in response.json()["attributes"]]

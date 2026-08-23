@@ -21,7 +21,6 @@ export interface MemberAttributeValueApiPayload {
 export interface Member {
   id: string;
   name: string;
-  email: string;
   identifiers: readonly MemberIdentifier[];
   attributes: readonly MemberAttributeValue[];
   createdAt: string;
@@ -30,7 +29,6 @@ export interface Member {
 
 export interface MemberInput {
   name: string;
-  email: string;
   identifiers: MemberIdentifier[];
   attributes: Record<string, string>;
 }
@@ -38,7 +36,6 @@ export interface MemberInput {
 export interface MemberApiPayload {
   id: string;
   name: string;
-  email: string;
   identifiers: MemberIdentifier[];
   attributes: MemberAttributeValueApiPayload[];
   created_at: string;

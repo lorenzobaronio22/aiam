@@ -9,7 +9,6 @@ import type { MemberInput } from "../types/members";
 
 function draftToInput(draft: {
   name: string;
-  email: string;
   taxId: string;
   attributes: Record<string, string>;
 }): MemberInput {
@@ -17,19 +16,17 @@ function draftToInput(draft: {
 
   return {
     name: draft.name,
-    email: draft.email,
     identifiers: taxId ? [{ type: "tax_id", country: "IT", value: taxId }] : [],
     attributes: { ...draft.attributes },
-  };
+   };
 }
 
 export function useMembersPageController() {
   const memberDraft = ref({
     name: "",
-    email: "",
     taxId: "",
     attributes: {} as Record<string, string>,
-  });
+   });
 
   const {
     clearFeedback,
@@ -85,11 +82,10 @@ export function useMembersPageController() {
           member?.attributes.find((attribute) => attribute.definitionId === definition.id)?.value ?? "";
       }
 
-      memberDraft.value = {
-        name: member?.name ?? "",
-        email: member?.email ?? "",
-        taxId: member?.identifiers.find((identifier) => identifier.type === "tax_id")?.value ?? "",
-        attributes,
+     memberDraft.value = {
+       name: member?.name ?? "",
+       taxId: member?.identifiers.find((identifier) => identifier.type === "tax_id")?.value ?? "",
+       attributes,
       };
     },
     { immediate: true },

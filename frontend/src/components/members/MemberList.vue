@@ -18,7 +18,6 @@ const props = defineProps<{
 
 const draft = defineModel<{
   name: string;
-  email: string;
   taxId: string;
   attributes: Record<string, string>;
 }>("draft", { required: true });
@@ -75,10 +74,9 @@ watch(
         >
           <span class="member-card__avatar" aria-hidden="true">{{ getInitials(member.name) }}</span>
 
-          <span class="member-card__info">
-            <span class="member-card__name">{{ member.name }}</span>
-            <span class="member-card__email">{{ member.email }}</span>
-          </span>
+             <span class="member-card__info">
+               <span class="member-card__name">{{ member.name }}</span>
+             </span>
 
           <span class="member-card__meta">
             <span class="member-card__updated">Agg. {{ formatDateTime(member.updatedAt) }}</span>
@@ -222,14 +220,6 @@ watch(
 
 .member-card__name {
   font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.member-card__email {
-  color: var(--color-muted);
-  font-size: 0.88rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

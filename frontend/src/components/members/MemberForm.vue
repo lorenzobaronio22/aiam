@@ -5,7 +5,6 @@ import type { AttributeDefinition } from "../../types/attributeDefinitions";
 
 const model = defineModel<{
   name: string;
-  email: string;
   taxId: string;
   attributes: Record<string, string>;
 }>({ required: true });
@@ -57,57 +56,55 @@ watch(
     <p v-if="props.isLoadingDetail" class="member-form__status">Caricamento scheda in corso...</p>
 
     <div class="member-form__fields">
-      <label class="member-form__field">
-        <span class="member-form__field-label">Nome e cognome</span>
-        <input
-          v-model="model.name"
-          :disabled="isBusy"
-          autocomplete="name"
-          name="name"
-          placeholder="Es. Giulia Rossi"
-          required
-          type="text"
-        />
-      </label>
+        <label class="member-form__field">
+          <span class="member-form__field-label">Nome e cognome</span>
+          <input
+           v-model="model.name"
+            :disabled="isBusy"
+           autocomplete="name"
+           name="name"
+           placeholder="Es. Giulia Rossi"
+           required
+           type="text"
+          />
+        </label>
 
-      <label class="member-form__field">
-        <span class="member-form__field-label">Email</span>
-        <input
-          v-model="model.email"
-          :disabled="isBusy"
-          autocomplete="email"
-          name="email"
-          placeholder="nome@azienda.it"
-          required
-          type="email"
-        />
-      </label>
+        <label class="member-form__field">
+          <span class="member-form__field-label">Codice Fiscale</span>
+          <input
+           v-model="model.taxId"
+            :disabled="isBusy"
+           autocomplete="off"
+           name="taxId"
+           placeholder="RSSMRA80A01H501U"
+           type="text"
+          />
+        </label>
 
-      <label class="member-form__field">
-        <span class="member-form__field-label">Codice Fiscale</span>
-        <input
-          v-model="model.taxId"
-          :disabled="isBusy"
-          autocomplete="off"
-          name="taxId"
-          placeholder="RSSMRA80A01H501U"
-          type="text"
-        />
-      </label>
+        <label
+         v-for="definition in props.activeDefinitions"
+          :key="definition.id"
+         class="member-form__field"
+        >
+          <span class="member-form__field-label">{{ definition.label }}</span>
 
-      <label
-        v-for="definition in props.activeDefinitions"
-        :key="definition.id"
-        class="member-form__field"
-      >
-        <span class="member-form__field-label">{{ definition.label }}</span>
-        <textarea
-          v-model="model.attributes[definition.id]"
-          :disabled="isBusy"
-          rows="3"
-        ></textarea>
-      </label>
-    </div>
+          <template v-if="definition.key === 'email'">
+             <input
+              v-model="model.attributes[definition.id]"
+               :disabled="isBusy"
+               autocomplete="email"
+               type="email"
+              />
+          </template>
+
+          <textarea
+           v-else
+            v-model="model.attributes[definition.id]"
+            :disabled="isBusy"
+            rows="3"
+           ></textarea>
+        </label>
+      </div>
 
     <div class="member-form__actions">
       <button class="member-form__cancel" :disabled="isBusy" type="button" @click="emit('cancel')">

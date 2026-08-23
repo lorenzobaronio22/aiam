@@ -119,10 +119,9 @@ describe("MembersPage", () => {
 
     expect(membersApiMocks.updateMember).toHaveBeenCalledWith("member-1", {
       name: "Giulia Bianchi",
-      email: "giulia@example.com",
       identifiers: [],
       attributes: {},
-    });
+      });
     expect(bodyWrapper().text()).toContain("Modifiche salvate con successo.");
     expect(router.currentRoute.value.path).toBe("/member");
     expect(wrapper.find(".member-form__delete").exists()).toBe(false);
@@ -171,9 +170,8 @@ describe("MembersPage", () => {
       buildMember({
         id: "member-2",
         name: "Laura Neri",
-        email: "laura@example.com",
-      }),
-    );
+        }),
+        );
 
     const { wrapper, router } = await factory();
     await flushPromises();
@@ -184,16 +182,14 @@ describe("MembersPage", () => {
     expect(bodyWrapper().find(".members-page__sheet").exists()).toBe(true);
 
     await bodyWrapper().get('input[name="name"]').setValue("Laura Neri");
-    await bodyWrapper().get('input[name="email"]').setValue("laura@example.com");
     await bodyWrapper().get(".members-page__sheet form").trigger("submit");
     await flushPromises();
 
     expect(membersApiMocks.createMember).toHaveBeenCalledWith({
       name: "Laura Neri",
-      email: "laura@example.com",
       identifiers: [],
       attributes: {},
-    });
+        });
     expect(bodyWrapper().text()).toContain("Nuovo membro salvato correttamente.");
     expect(router.currentRoute.value.path).toBe("/member");
     expect(bodyWrapper().find(".members-page__sheet").exists()).toBe(false);
@@ -212,7 +208,6 @@ describe("MembersPage", () => {
     await flushPromises();
 
     await bodyWrapper().get('input[name="name"]').setValue("Laura Neri");
-    await bodyWrapper().get('input[name="email"]').setValue("laura@example.com");
     await bodyWrapper().get(".members-page__sheet form").trigger("submit");
     await flushPromises();
 
@@ -226,16 +221,14 @@ describe("MembersPage", () => {
       buildMemberList({
         id: "member-3",
         name: "Anna Verdi",
-        email: "anna@example.com",
-      }),
-    );
+         }),
+         );
     membersApiMocks.getMember.mockResolvedValue(
       buildMember({
         id: "member-3",
         name: "Anna Verdi",
-        email: "anna@example.com",
-      }),
-    );
+         }),
+         );
 
     const { router, wrapper } = await factory("/member/member-3");
     await flushPromises();
@@ -257,11 +250,10 @@ describe("MembersPage", () => {
       member: {
         id: updated.id,
         name: updated.name,
-        email: updated.email,
         created_at: updated.createdAt,
         updated_at: updated.updatedAt,
-      },
-    });
+         },
+         });
     await flushPromises();
 
     expect(wrapper.text()).toContain("Giulia Aggiornata");

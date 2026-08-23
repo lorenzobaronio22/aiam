@@ -28,12 +28,11 @@ def to_member_out(record: dict, active_definitions: list):
     return MemberOut(
         id=record["id"],
         name=record["name"],
-        email=record["email"],
         identifiers=record.get("identifiers", []),
         attributes=attributes,
         created_at=record["created_at"],
         updated_at=record["updated_at"],
-    )
+      )
 
 
 def identifier_exists(
