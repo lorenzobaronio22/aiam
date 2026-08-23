@@ -110,12 +110,11 @@ export function toMemberPayload(payload: unknown): MemberApiPayload {
   return {
     id: readRequiredString(payload.id, "id"),
     name: readRequiredString(payload.name, "name"),
-    email: readRequiredString(payload.email, "email"),
     identifiers: toMemberIdentifiers(payload.identifiers),
     attributes: toMemberAttributes(payload.attributes),
     created_at: readRequiredString(payload.created_at, "created_at"),
     updated_at: readRequiredString(payload.updated_at, "updated_at"),
-  };
+   };
 }
 
 function toMemberPayloadList(payload: unknown): MemberApiPayload[] {
@@ -130,17 +129,16 @@ export function toMember(payload: MemberApiPayload): Member {
   return {
     id: payload.id,
     name: payload.name,
-    email: payload.email,
     identifiers: payload.identifiers,
     attributes: payload.attributes.map((attribute) => ({
       definitionId: attribute.definition_id,
       key: attribute.key,
       label: attribute.label,
       value: attribute.value,
-    })),
+     })),
     createdAt: payload.created_at,
     updatedAt: payload.updated_at,
-  };
+    };
 }
 
 async function parseError(response: Response): Promise<ApiError> {

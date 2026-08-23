@@ -19,13 +19,12 @@ function sortMembers(items: Member[]): Member[] {
 function normalizeInput(input: MemberInput): MemberInput {
   return {
     name: input.name.trim(),
-    email: input.email.trim().toLowerCase(),
     identifiers: input.identifiers.map((identifier) => ({
-      ...identifier,
-      value: identifier.value.trim(),
-    })),
+    ...identifier,
+    value: identifier.value.trim(),
+     })),
     attributes: input.attributes,
-  };
+   };
 }
 
 function toMessage(error: unknown, fallback: string): string {

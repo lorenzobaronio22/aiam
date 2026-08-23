@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import EmailStr, field_validator
+from pydantic import field_validator
 
 from src.models import ApiModel
 
@@ -30,7 +30,6 @@ def _reject_duplicate_identifier_types(
 
 class MemberIn(ApiModel):
     name: str
-    email: EmailStr
     identifiers: list[MemberIdentifier] = []
     attributes: dict[str, str] = {}
 
@@ -52,7 +51,6 @@ class MemberAttributeValueOut(ApiModel):
 class MemberOut(ApiModel):
     id: str
     name: str
-    email: str
     identifiers: list[MemberIdentifier] = []
     attributes: list[MemberAttributeValueOut] = []
     created_at: str
@@ -61,7 +59,6 @@ class MemberOut(ApiModel):
 
 class MemberUpdate(ApiModel):
     name: str | None = None
-    email: EmailStr | None = None
     identifiers: list[MemberIdentifier] | None = None
     # None means "leave unchanged"; a dict upserts only the given definition ids,
     # so hidden values of soft-deleted definitions are preserved.

@@ -16,16 +16,18 @@ async def test_list_attribute_types_returns_every_registered_type(client):
 
 
 @pytest.mark.anyio
-async def test_current_registry_contains_only_free_text_note(client):
+async def test_current_registry_contains_free_text_note_and_email(client):
     response = await client.get("/attribute-types")
 
     assert response.status_code == 200
     body = response.json()
-    assert len(body) == 1
-    assert body[0]["key"] == "free_text_note"
-    assert body[0]["name"] == "Free Text Note"
-    assert "1000 characters" in body[0]["description"]
-    assert "blank" in body[0]["description"]
+    keys = {item["key"] for item in body}
+    assert keys == {"free_text_note", "email"}
+
+    email_type = next(item for item in body if item["key"] == "email")
+    assert email_type["name"] == "Email"
+    assert "valid email" in email_type["description"]
+    assert "blank" in email_type["description"]
 
 
 @pytest.mark.anyio

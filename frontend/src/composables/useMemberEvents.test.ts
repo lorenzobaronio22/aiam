@@ -10,11 +10,10 @@ function memberEventPayload(member: ReturnType<typeof buildMember>) {
     member: {
       id: member.id,
       name: member.name,
-      email: member.email,
       created_at: member.createdAt,
       updated_at: member.updatedAt,
-    },
-  };
+      },
+      };
 }
 
 describe("useMemberEvents", () => {

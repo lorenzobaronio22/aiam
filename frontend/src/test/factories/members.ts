@@ -5,7 +5,6 @@ type MemberOverrides = Partial<Member>;
 const DEFAULT_MEMBER: Member = {
   id: "member-1",
   name: "Giulia Rossi",
-  email: "giulia@example.com",
   identifiers: [],
   attributes: [],
   createdAt: "2026-08-02T08:00:00Z",

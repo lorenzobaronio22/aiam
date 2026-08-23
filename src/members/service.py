@@ -56,14 +56,13 @@ async def create_member(payload: MemberIn) -> MemberOut:
     member_id = str(uuid.uuid7())
     now = utils.now_iso()
     record = {
-        "id": member_id,
-        "name": payload.name,
-        "email": str(payload.email),
-        "identifiers": [identifier.model_dump() for identifier in payload.identifiers],
-        "attribute_values": dict(payload.attributes),
-        "created_at": now,
-        "updated_at": now,
-    }
+         "id": member_id,
+         "name": payload.name,
+         "identifiers": [identifier.model_dump() for identifier in payload.identifiers],
+         "attribute_values": dict(payload.attributes),
+         "created_at": now,
+         "updated_at": now,
+      }
     data[member_id] = record
     await utils.save(data)
     active_definitions = await attribute_definitions_service.list_active_definitions()
@@ -94,8 +93,6 @@ async def update_member(member_id: str, payload: MemberUpdate) -> MemberOut:
 
     if payload.name is not None:
         record["name"] = payload.name
-    if payload.email is not None:
-        record["email"] = str(payload.email)
     if payload.identifiers is not None:
         record["identifiers"] = [identifier.model_dump() for identifier in payload.identifiers]
     if payload.attributes is not None:

@@ -10,10 +10,9 @@ def make_member(member_id: str = "member-1") -> MemberOut:
     return MemberOut(
         id=member_id,
         name="Jane Smith",
-        email="jane@example.com",
         created_at="2026-01-01T00:00:00+00:00",
         updated_at="2026-01-01T00:00:00+00:00",
-    )
+        )
 
 
 @pytest.mark.anyio
