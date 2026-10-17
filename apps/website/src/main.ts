@@ -3,6 +3,7 @@ import heroImg from "./assets/hero.png";
 import typescriptLogo from "./assets/typescript.svg";
 import viteLogo from "./assets/vite.svg";
 import { setupCounter } from "./counter.ts";
+import { fetchUserCount } from "./lib/api.ts";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 <section id="center">
@@ -14,6 +15,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div>
     <h1>Get started</h1>
     <p>Edit <code>src/main.ts</code> and save to test <code>HMR</code></p>
+    <p id="api-status">API: checking…</p>
   </div>
   <button id="counter" type="button" class="counter"></button>
 </section>
@@ -58,3 +60,12 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 `;
 
 setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
+
+// Demonstrates the typed RPC client: path, query, and response are all
+// inferred from the contract, so this call compiles only while the route and
+// its schema still exist.
+const statusEl = document.querySelector<HTMLParagraphElement>("#api-status")!;
+void fetchUserCount().then((total) => {
+  statusEl.textContent =
+    total === null ? "API: unavailable" : `API: ${total} user${total === 1 ? "" : "s"}`;
+});

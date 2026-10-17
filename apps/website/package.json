@@ -8,6 +8,10 @@
     "build": "tsc && vp build",
     "preview": "vp preview"
   },
+  "dependencies": {
+    "api-contract": "workspace:*",
+    "hono": "catalog:"
+  },
   "devDependencies": {
     "typescript": "^7.0.2",
     "vite": "catalog:",

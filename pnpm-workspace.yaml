@@ -6,10 +6,21 @@ packages:
 catalogMode: prefer
 
 catalog:
+  "@hono/node-server": ^2.1.5
+  "@hono/zod-validator": ^0.9.1
   "@types/node": ^24
+  hono: ^4.13.13
+  tsx: ^4.23.15
   typescript: ^7.0.2
   vite: npm:@voidzero-dev/vite-plus-core@1.3.0
   vite-plus: 1.3.0
+  zod: ^4.6.7
+
+# esbuild ships a platform binary via postinstall; tsx (used by apps/api) needs it.
+# pnpm 11+ expresses build approval as a matcher map (onlyBuiltDependencies was removed).
+allowBuilds:
+  esbuild: true
+
 overrides:
   vite@*: "catalog:"
 peerDependencyRules:
