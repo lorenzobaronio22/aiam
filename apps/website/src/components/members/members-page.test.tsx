@@ -77,6 +77,24 @@ test("renders the member rows and the total", async () => {
   expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
 });
 
+test("renders a stacked card list on mobile screens", async () => {
+  membersLib.listMembers.mockResolvedValue(pageResult([member()]));
+  const originalWidth = window.innerWidth;
+  window.innerWidth = 375;
+
+  try {
+    render(<MembersPage />);
+
+    expect(await screen.findByText("Ada Lovelace")).toBeInTheDocument();
+    // The actions sit on the card, so they are reachable without horizontal scrolling.
+    expect(screen.getByRole("button", { name: "Actions for Ada Lovelace" })).toBeInTheDocument();
+    expect(screen.getByText("Date of birth")).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  } finally {
+    window.innerWidth = originalWidth;
+  }
+});
+
 test("shows the empty state when there are no members", async () => {
   membersLib.listMembers.mockResolvedValue(pageResult([]));
 

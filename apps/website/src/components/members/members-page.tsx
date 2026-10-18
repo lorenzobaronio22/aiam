@@ -1,12 +1,4 @@
-import {
-  EllipsisIcon,
-  PencilIcon,
-  PlusIcon,
-  RefreshCwIcon,
-  SearchIcon,
-  Trash2Icon,
-  UsersIcon,
-} from "lucide-react";
+import { PlusIcon, RefreshCwIcon, SearchIcon, UsersIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Member } from "api-contract/schemas";
 import { Button } from "@/components/ui/button";
@@ -20,13 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -35,6 +20,14 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemTitle,
+} from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -45,8 +38,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useMembers } from "@/hooks/use-members.ts";
+import { useIsMobile } from "@/hooks/use-mobile.ts";
 import { formatDate } from "@/lib/format.ts";
 import { DeleteMemberDialog } from "./delete-member-dialog.tsx";
+import { MemberActionsMenu } from "./member-actions-menu.tsx";
 import { MemberFormDialog } from "./member-form-dialog.tsx";
 
 const PAGE_SIZE = 10;
@@ -74,6 +69,9 @@ export function MembersPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const members = data?.items ?? [];
   const showSkeleton = status === "loading" && data === null;
+  // Phones get a stacked card list: the table needs horizontal scrolling there,
+  // which hides the row actions behind a swipe.
+  const isMobile = useIsMobile();
 
   // Deleting the last row of a page can leave us past the end; snap back.
   useEffect(() => {
@@ -169,60 +167,80 @@ export function MembersPage() {
               )}
             </Empty>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Date of birth</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.map((member) => (
-                  <TableRow key={member.id}>
-                    <TableCell className="font-medium">
-                      {member.firstName} {member.lastName}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{member.email}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDate(member.dateOfBirth)}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {member.phoneNumber ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-label={`Actions for ${member.firstName} ${member.lastName}`}
-                          >
-                            <EllipsisIcon />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEdit(member)}>
-                            <PencilIcon />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => setDeleting(member)}
-                          >
-                            <Trash2Icon />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <>
+              {isMobile ? (
+                <ItemGroup className="gap-3">
+                  {members.map((member) => (
+                    <Item
+                      key={member.id}
+                      role="listitem"
+                      variant="outline"
+                      className="items-start gap-4"
+                    >
+                      <ItemContent className="min-w-0">
+                        <ItemTitle className="w-full text-base">
+                          {member.firstName} {member.lastName}
+                        </ItemTitle>
+                        <ItemDescription className="break-all">{member.email}</ItemDescription>
+                        <dl className="mt-0.5 grid grid-cols-2 gap-x-4 gap-y-1">
+                          <div className="min-w-0">
+                            <dt className="text-xs text-muted-foreground">Date of birth</dt>
+                            <dd>{formatDate(member.dateOfBirth)}</dd>
+                          </div>
+                          <div className="min-w-0">
+                            <dt className="text-xs text-muted-foreground">Phone</dt>
+                            <dd className="truncate">{member.phoneNumber ?? "—"}</dd>
+                          </div>
+                        </dl>
+                      </ItemContent>
+                      <ItemActions>
+                        <MemberActionsMenu
+                          member={member}
+                          onEdit={openEdit}
+                          onDelete={setDeleting}
+                          className="size-8"
+                        />
+                      </ItemActions>
+                    </Item>
+                  ))}
+                </ItemGroup>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Date of birth</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead className="w-10" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {members.map((member) => (
+                      <TableRow key={member.id}>
+                        <TableCell className="font-medium">
+                          {member.firstName} {member.lastName}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{member.email}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {formatDate(member.dateOfBirth)}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {member.phoneNumber ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <MemberActionsMenu
+                            member={member}
+                            onEdit={openEdit}
+                            onDelete={setDeleting}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </>
           )}
         </CardContent>
 
