@@ -1,0 +1,32 @@
+# Keep the build context small and deterministic. Build output is produced
+# inside the image, so never send it (or the local install) to the daemon.
+
+# Local installs and build output
+**/node_modules
+**/dist
+**/dist-ssr
+**/coverage
+**/.nyc_output
+
+# Test output
+**/test-results
+**/playwright-report
+**/blob-report
+**/.features-gen
+**/playwright/.cache
+
+# Tooling, docs, and editor noise
+.git
+.github
+.vscode
+.idea
+docs
+**/*.log
+logs
+.DS_Store
+*.local
+
+# Secrets — the runtime gets configuration from the environment
+.env
+.env.*
+!.env.example

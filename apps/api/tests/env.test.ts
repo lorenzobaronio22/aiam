@@ -10,6 +10,7 @@ test("applies development defaults when nothing is configured", () => {
     PORT: 8787,
     CORS_ORIGINS: [],
     MCP_ALLOWED_HOSTS: ["localhost", "127.0.0.1", "[::1]"],
+    STATIC_ROOT: "",
   });
 });
 
@@ -18,11 +19,13 @@ test("coerces PORT and splits comma-separated lists", () => {
     PORT: "9000",
     CORS_ORIGINS: "https://a.test, https://b.test ,",
     MCP_ALLOWED_HOSTS: "host.test",
+    STATIC_ROOT: "./public",
   });
 
   expect(env.PORT).toBe(9000);
   expect(env.CORS_ORIGINS).toEqual(["https://a.test", "https://b.test"]);
   expect(env.MCP_ALLOWED_HOSTS).toEqual(["host.test"]);
+  expect(env.STATIC_ROOT).toBe("./public");
 });
 
 test("fails fast with a readable message on invalid configuration", () => {

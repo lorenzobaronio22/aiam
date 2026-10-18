@@ -1,0 +1,34 @@
+# Local Docker Compose stack for the members directory.
+#
+#   docker compose up --build
+#   open http://localhost:8787            # SPA + API + MCP, one origin
+#   curl http://localhost:8787/health
+#   curl -X POST http://localhost:8787/mcp ...
+#
+# One image: Hono serves the built SPA from STATIC_ROOT alongside the API and
+# MCP, so there is no second service, reverse proxy, or CORS setup.
+#
+# The build context is the repo root because this is a pnpm workspace.
+
+name: aiam
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: aiam:local
+    init: true
+    environment:
+      NODE_ENV: production
+      PORT: "8787"
+      # Serve the SPA the image copied to ./public. Set to "" to disable it.
+      STATIC_ROOT: ./public
+      # Loopback names are enough for local testing; add real hostnames when
+      # you deploy behind a domain.
+      MCP_ALLOWED_HOSTS: localhost,127.0.0.1,[::1]
+      # Same-origin by default; no cross-origin calls are needed.
+      CORS_ORIGINS: ""
+    ports:
+      - "8787:8787"
+    restart: unless-stopped

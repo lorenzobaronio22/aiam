@@ -18,6 +18,12 @@ const EnvSchema = z.object({
    * Defaults to the loopback names, which is what a local/dev deployment needs.
    */
   MCP_ALLOWED_HOSTS: z.string().default("localhost,127.0.0.1,[::1]").transform(commaSeparated),
+  /**
+   * Directory holding the built SPA (`index.html` + `assets/`). Empty (the
+   * default) disables static serving, which is what development wants: there
+   * Vite serves the frontend. The production image sets it to `./public`.
+   */
+  STATIC_ROOT: z.string().default(""),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

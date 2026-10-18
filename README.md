@@ -122,3 +122,60 @@ coverage policy, and how to add a scenario.
 vp run ready            # build -> vp check -> coverage (the full gate)
 vp run coverage:summary # aggregate coverage table across all packages
 ```
+
+## Docker
+
+One production image, following the
+[Vite+ Docker guide](https://viteplus.dev/guide/docker#production-ssr-node-js-server-app):
+the Hono server serves the REST API, the MCP endpoint, **and** the built SPA
+(`apps/website`) as static files on a single origin. That removes the second
+container, the nginx proxy, and any CORS setup.
+
+The build is multi-stage: the official `ghcr.io/voidzero-dev/vite-plus`
+toolchain image compiles both apps, and the runtime stage ships only the
+resolved Node.js, the server bundle, production dependencies, and the static
+frontend. Because this is a pnpm workspace, the build **context is the repo
+root** and `.dockerignore` keeps the context small.
+
+```bash
+docker build -f apps/api/Dockerfile -t aiam .
+docker run --rm -p 8787:8787 aiam
+# then open http://localhost:8787
+```
+
+### Local stack
+
+```bash
+docker compose up --build
+```
+
+- App (SPA + API + MCP): <http://localhost:8787> — `/health`, `/api/*`, and
+  `/mcp` live on the same origin as the SPA.
+
+Stop and clean up:
+
+```bash
+docker compose down        # add -v to drop any named volumes
+```
+
+### Notes
+
+- **Static serving** is enabled by `STATIC_ROOT` (empty by default, so
+  `vp run dev` is unaffected — there Vite serves the frontend). The image sets
+  it to `./public`. Client-side routes fall back to `index.html`, but `/api/*`
+  and `/mcp/*` are never shadowed: an unmatched path there returns the API's
+  JSON 404. Hashed assets are cached `immutable`; the shell is `no-cache`.
+- **Toolchain version** is pinned via the `VITE_PLUS_IMAGE` build arg
+  (default `ghcr.io/voidzero-dev/vite-plus:1.3.0`). Override it to a digest
+  for byte-for-byte reproducible builds.
+- **Production dependencies** are isolated with `pnpm deploy --prod` in the
+  build stage, which inlines the workspace `api-contract` package and drops
+  devDependencies (including the `vite-plus` toolchain and the frontend build
+  stack) from the runtime.
+- **Runtime configuration** is read from the environment, never baked in:
+  `NODE_ENV`, `PORT`, `STATIC_ROOT`, `CORS_ORIGINS`, `MCP_ALLOWED_HOSTS` (see
+  `apps/api/.env.example`). `.env` is excluded from the build context.
+- **Frontend API origin** defaults to same-origin, which this single image
+  provides. To point the SPA at a different API, build with
+  `--build-arg VITE_API_URL=https://api.example.com` and set `CORS_ORIGINS` on
+  the server to that origin.
