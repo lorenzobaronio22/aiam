@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
@@ -16,5 +17,23 @@ export default defineConfig({
     // through `exports`, so a watch rebuild must never leave `dist/` missing
     // even briefly. Cleaning here would race every dev server start.
     clean: false,
+  },
+  test: {
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "text-summary", "json-summary", "lcov", "html"],
+      reportsDirectory: resolve(import.meta.dirname, "coverage"),
+      include: ["src/**/*.ts"],
+      exclude: [
+        // Pure type module — no runtime code to cover.
+        "src/services.ts",
+      ],
+      thresholds: {
+        statements: 90,
+        branches: 85,
+        functions: 90,
+        lines: 90,
+      },
+    },
   },
 });

@@ -7,7 +7,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "vp pack",
     "start": "node dist/index.mjs",
-    "test": "vp test",
+    "test": "vp test run",
+    "test:coverage": "vp test run --coverage",
     "check": "vp check"
   },
   "dependencies": {
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vite-plus": "catalog:"

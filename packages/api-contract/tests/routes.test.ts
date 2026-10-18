@@ -166,6 +166,14 @@ test("GET /api/v1/members/:id returns 404 for an unknown id", async () => {
   await expect(res.json()).resolves.toMatchObject({ error: { code: "NOT_FOUND" } });
 });
 
+test("GET /api/v1/members/:id returns the member body", async () => {
+  const res = await client.api.v1.members[":id"].$get({ param: { id: VALID_ID } });
+  expect(res.status).toBe(200);
+  await expect(res.json()).resolves.toMatchObject({
+    member: { id: VALID_ID, email: "ada@example.com" },
+  });
+});
+
 test("GET /api/v1/members/:id rejects a non-uuid id with 400", async () => {
   const res = await client.api.v1.members[":id"].$get({ param: { id: "not-a-uuid" } });
   expect(res.status).toBe(400);

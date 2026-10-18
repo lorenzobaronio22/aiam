@@ -30,7 +30,7 @@ sequence:
 | `get_audit_checklist`               | Verify new components/files after generating UI.                                            |
 
 Registries are read from `components.json`. Prefer the tool call over
-`pnpm dlx shadcn@latest list` so results stay structured.
+`vp dlx shadcn@latest list` so results stay structured.
 
 ### Workflow
 
@@ -44,7 +44,7 @@ Registries are read from `components.json`. Prefer the tool call over
 5. `get_add_command_for_items`, then run that command **from `apps/website`**:
 
    ```bash
-   cd apps/website && pnpm dlx shadcn@latest add @shadcn/<item>
+   cd apps/website && vp dlx shadcn@latest add @shadcn/<item>
    ```
 
 6. Compose the UI from the installed components, then run
@@ -73,11 +73,11 @@ missing, this app is still the plain Vite starter and shadcn components cannot
 be installed.
 
 shadcn/ui needs React and Tailwind. To convert the app, add them through the
-workspace (`pnpm --filter website …`), then run the initializer in the app and
-follow its prompts for base color, CSS variables, and aliases:
+workspace (`vp add <pkg> --filter website`), then run the initializer in the app
+and follow its prompts for base color, CSS variables, and aliases:
 
 ```bash
-cd apps/website && pnpm dlx shadcn@latest init
+cd apps/website && vp dlx shadcn@latest init
 ```
 
 After `init`, `components.json` exists and the MCP tools can list, search, and

@@ -1,4 +1,5 @@
 import { expect, test } from "vite-plus/test";
+import type { ApiServices } from "api-contract";
 import { buildApp } from "../src/app.ts";
 import { createInMemoryMembersService } from "../src/services/members.ts";
 
@@ -117,6 +118,47 @@ test("tools/call rejects invalid input without touching the service", async () =
   expect(body.result?.isError).toBe(true);
 });
 
+test("tools/call update_member patches only the provided fields", async () => {
+  const app = createTestApp();
+  const { body } = await mcp(app, callTool("update_member", { id: SEEDED_ID, lastName: "King" }));
+
+  expect(body.result?.isError).toBeFalsy();
+  expect(payload(body)).toMatchObject({ id: SEEDED_ID, firstName: "Ada", lastName: "King" });
+});
+
+test("tools/call delete_member removes the member", async () => {
+  const app = createTestApp();
+  const removed = await mcp(app, callTool("delete_member", { id: SEEDED_ID }));
+  expect(removed.body.result?.isError).toBeFalsy();
+
+  const after = await mcp(app, callTool("get_member", { id: SEEDED_ID }));
+  expect(after.body.result?.isError).toBe(true);
+});
+
+test("an unexpected service failure is not swallowed by the tool boundary", async () => {
+  const failing: ApiServices = {
+    members: {
+      list: async () => ({ items: [], page: 1, limit: 20, total: 0 }),
+      get: async () => {
+        throw new Error("boom");
+      },
+      create: async () => {
+        throw new Error("boom");
+      },
+      update: async () => {
+        throw new Error("boom");
+      },
+      delete: async () => {
+        throw new Error("boom");
+      },
+    },
+  };
+
+  const { body } = await mcp(buildApp(failing), callTool("get_member", { id: SEEDED_ID }));
+  expect(body.result?.isError).toBe(true);
+  expect(body.result?.content?.[0]?.text).toBe("boom");
+});
+
 test("POST /mcp rejects a disallowed Host header", async () => {
   const res = await createTestApp().request("/mcp", {
     method: "POST",
@@ -124,4 +166,17 @@ test("POST /mcp rejects a disallowed Host header", async () => {
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
   });
   expect(res.status).toBe(403);
+});
+
+test("POST /mcp allows an IPv6 loopback Host header", async () => {
+  const res = await createTestApp().request("/mcp", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json, text/event-stream",
+      host: "[::1]:8787",
+    },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+  });
+  expect(res.status).toBe(200);
 });

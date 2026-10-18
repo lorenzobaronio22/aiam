@@ -20,4 +20,32 @@ export default defineConfig({
       "/api": { target: API_TARGET, changeOrigin: true },
     },
   },
+  test: {
+    environment: "jsdom",
+    setupFiles: [resolve(import.meta.dirname, "src/test/setup.ts")],
+    // Restore spies/mocks between tests so one test cannot leak into the next.
+    restoreMocks: true,
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "text-summary", "json-summary", "lcov", "html"],
+      reportsDirectory: resolve(import.meta.dirname, "coverage"),
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        // Entry point: only mounts React, never imported by tests.
+        "src/main.tsx",
+        // Ambient types, no runtime.
+        "src/**/*.d.ts",
+        // shadcn registry output — generated, not ours to test.
+        "src/components/ui/**",
+        // Test-only utilities.
+        "src/test/**",
+      ],
+      thresholds: {
+        statements: 90,
+        branches: 85,
+        functions: 90,
+        lines: 90,
+      },
+    },
+  },
 });

@@ -2,13 +2,6 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { z } from "zod";
 
-// Load `.env` when present (dev and `node dist/index.mjs` both benefit).
-// Test runs and CI, which have no file, simply fall through to real env vars.
-const envFile = resolve(process.cwd(), ".env");
-if (existsSync(envFile)) {
-  process.loadEnvFile(envFile);
-}
-
 /** Splits a comma-separated list, dropping blanks and surrounding whitespace. */
 const commaSeparated = (value: string) =>
   value
@@ -29,14 +22,34 @@ const EnvSchema = z.object({
 
 export type Env = z.infer<typeof EnvSchema>;
 
-const parsed = EnvSchema.safeParse(process.env);
+/**
+ * Load `.env` when present (dev and `node dist/index.mjs` both benefit).
+ * Test runs and CI, which have no file, simply fall through to real env vars.
+ */
+export function loadEnvFile(dir: string = process.cwd()): void {
+  const envFile = resolve(dir, ".env");
+  if (existsSync(envFile)) {
+    process.loadEnvFile(envFile);
+  }
+}
 
-if (!parsed.success) {
-  const issues = parsed.error.issues
-    .map((issue) => `  - ${issue.path.join(".") || "(root)"}: ${issue.message}`)
-    .join("\n");
-  throw new Error(`Invalid environment configuration:\n${issues}`);
+/**
+ * Validate a raw environment object. Exported so the rules can be tested
+ * directly; the running process always uses `env` below.
+ */
+export function parseEnv(source: Record<string, string | undefined> = process.env): Env {
+  const parsed = EnvSchema.safeParse(source);
+
+  if (!parsed.success) {
+    const issues = parsed.error.issues
+      .map((issue) => `  - ${issue.path.join(".") || "(root)"}: ${issue.message}`)
+      .join("\n");
+    throw new Error(`Invalid environment configuration:\n${issues}`);
+  }
+
+  return parsed.data;
 }
 
 /** Validated, typed environment. Fail fast at boot instead of mid-request. */
-export const env: Env = parsed.data;
+loadEnvFile();
+export const env: Env = parseEnv();

@@ -95,3 +95,30 @@ Notes on the contract package: its `dist` is what consumers resolve through
 `exports`, so it is built before dev starts and `pack.clean` is disabled — a
 watch rebuild must never leave `dist` missing, or a running dev server would
 fail to import it.
+
+## Testing
+
+Three layers, all runnable from the root:
+
+| Command                | What it runs                                                             |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `vp run test`          | Unit tests for `apps/api`, `apps/website`, and `packages/api-contract`.  |
+| `vp run test:coverage` | Unit tests with coverage and the minimum-coverage guardrail (see below). |
+| `vp run test:e2e`      | The Gherkin scenarios, as Playwright end-to-end tests.                   |
+| `vp run test:all`      | Coverage and e2e together.                                               |
+
+Coverage is enforced per package in each `vite.config.ts`
+(`test.coverage.thresholds`): a run fails when statements/branches/functions/
+lines drop below the floor. Reports (`text`, `html`, `lcov`, `json-summary`) are
+written to `coverage/`.
+
+Behaviour is documented as Cucumber/Gherkin and executed, not just described.
+The feature files in [`docs/testing/features`](docs/testing/features) are the
+single source of truth; `apps/e2e` compiles them into Playwright tests. See
+[`docs/testing/README.md`](docs/testing/README.md) for the full strategy, the
+coverage policy, and how to add a scenario.
+
+```bash
+vp run ready            # build -> vp check -> coverage (the full gate)
+vp run coverage:summary # aggregate coverage table across all packages
+```

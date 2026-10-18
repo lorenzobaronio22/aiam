@@ -108,6 +108,17 @@ test("update patches partially and clears an optional field with a blank string"
   expect(updated.updatedAt).not.toBe(seeded.updatedAt);
 });
 
+test("update clears any optional text field independently", async () => {
+  const seeded = member({ phoneNumber: "+1 555 0100", address: "Old street", notes: "keep me" });
+  const service = createInMemoryMembersService([seeded]);
+
+  const updated = await service.update(seeded.id, { address: "New street", notes: "" });
+
+  expect(updated.address).toBe("New street");
+  expect(updated.notes).toBeUndefined();
+  expect(updated.phoneNumber).toBe("+1 555 0100");
+});
+
 test("update allows keeping the same email but rejects another member's", async () => {
   const first = member({ email: "ada@example.com" });
   const second = member({ email: "grace@example.com" });
