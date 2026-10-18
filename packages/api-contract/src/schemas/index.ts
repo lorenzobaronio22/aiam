@@ -1,3 +1,3 @@
 export * from "./common.ts";
 export * from "./health.ts";
-export * from "./users.ts";
+export * from "./members.ts";

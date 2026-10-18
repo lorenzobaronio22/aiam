@@ -1,20 +1,29 @@
-import type { CreateUserInput, ListUsersQuery, ListUsersResult, User } from "./schemas/users.ts";
+import type {
+  CreateMemberInput,
+  ListMembersQuery,
+  ListMembersResult,
+  Member,
+  UpdateMemberInput,
+} from "./schemas/members.ts";
 
 /**
- * Implemented by the server (`apps/api`) and consumed by the routes here.
+ * Business operations for members, implemented by the server (`apps/api`) and
+ * consumed by the routes here.
  *
- * Declaring these as interfaces keeps the shared package free of Node/DB
- * imports, so the frontend's type graph stays small and portable.
+ * Declaring the shape as an interface keeps this shared package free of Node
+ * and database imports, so the frontend's type graph stays small and portable.
+ * Mutating operations throw `NotFoundError` / `ConflictError` on failure.
  */
-export interface UsersService {
-  list(query: ListUsersQuery): Promise<ListUsersResult>;
-  get(id: string): Promise<User | null>;
-  create(input: CreateUserInput): Promise<User>;
-  update(id: string, input: Partial<CreateUserInput>): Promise<User | null>;
+export interface MembersService {
+  list(query: ListMembersQuery): Promise<ListMembersResult>;
+  get(id: string): Promise<Member>;
+  create(input: CreateMemberInput): Promise<Member>;
+  update(id: string, input: UpdateMemberInput): Promise<Member>;
+  delete(id: string): Promise<void>;
 }
 
 export interface ApiServices {
-  users: UsersService;
+  members: MembersService;
 }
 
 /**

@@ -8,8 +8,17 @@ import { z } from "zod";
  */
 export const ErrorBodySchema = z.object({
   error: z.object({
-    code: z.enum(["BAD_REQUEST", "NOT_FOUND", "CONFLICT", "UNPROCESSABLE", "INTERNAL_ERROR"]),
+    code: z.enum([
+      "BAD_REQUEST",
+      "NOT_FOUND",
+      "CONFLICT",
+      "PAYLOAD_TOO_LARGE",
+      "UNPROCESSABLE",
+      "INTERNAL_ERROR",
+    ]),
     message: z.string(),
+    /** Correlates the response with the server logs; echoes the `X-Request-Id` header. */
+    requestId: z.string(),
     details: z.array(z.unknown()).optional(),
   }),
 });

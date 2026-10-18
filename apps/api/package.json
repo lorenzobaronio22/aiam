@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@hono/node-server": "catalog:",
+    "@modelcontextprotocol/sdk": "catalog:",
     "api-contract": "workspace:*",
     "hono": "catalog:",
     "zod": "catalog:"

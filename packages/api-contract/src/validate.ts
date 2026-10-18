@@ -22,6 +22,7 @@ export function validate<Target extends keyof ValidationTargets, S extends z.Zod
       error: {
         code: "BAD_REQUEST",
         message: `Invalid ${target}`,
+        requestId: c.get("requestId"),
         details: result.error.issues,
       },
     };

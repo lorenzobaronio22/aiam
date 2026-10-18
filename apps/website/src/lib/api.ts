@@ -9,21 +9,6 @@ export const apiBaseUrl = import.meta.env.VITE_API_URL ?? "";
 /**
  * Fully typed RPC client. `AppType` is inferred from the zod schemas in
  * `api-contract`, so paths, query params, bodies, and responses are checked at
- * compile time.
+ * compile time — a drift is a build error, not a 404.
  */
 export const api = createApiClient(apiBaseUrl);
-
-/**
- * Typed read used by the landing page status line. The query is validated by
- * the same `ListUsersQuerySchema` the server enforces.
- */
-export async function fetchUserCount(): Promise<number | null> {
-  try {
-    const res = await api.api.v1.users.$get({ query: { limit: "1" } });
-    if (!res.ok) return null;
-    const body = await res.json();
-    return body.total;
-  } catch {
-    return null;
-  }
-}

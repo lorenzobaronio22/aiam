@@ -9,18 +9,22 @@ if (existsSync(envFile)) {
   process.loadEnvFile(envFile);
 }
 
+/** Splits a comma-separated list, dropping blanks and surrounding whitespace. */
+const commaSeparated = (value: string) =>
+  value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().min(1).max(65_535).default(8787),
-  CORS_ORIGINS: z
-    .string()
-    .default("")
-    .transform((value) =>
-      value
-        .split(",")
-        .map((origin) => origin.trim())
-        .filter(Boolean),
-    ),
+  CORS_ORIGINS: z.string().default("").transform(commaSeparated),
+  /**
+   * Hostnames allowed in the `Host` header of MCP requests (port-agnostic).
+   * Defaults to the loopback names, which is what a local/dev deployment needs.
+   */
+  MCP_ALLOWED_HOSTS: z.string().default("localhost,127.0.0.1,[::1]").transform(commaSeparated),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

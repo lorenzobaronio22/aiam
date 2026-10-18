@@ -29,9 +29,9 @@ and check the installed versions in package.json before using an API.
 2. **Chain route definitions** on a single instance so types flow to the RPC client:
    ```ts
    const users = new Hono()
-     .get('/', (c) => c.json(listUsers()))
-     .post('/', zValidator('json', createUserSchema), async (c) => {
-       const input = c.req.valid('json');
+     .get("/", (c) => c.json(listUsers()))
+     .post("/", zValidator("json", createUserSchema), async (c) => {
+       const input = c.req.valid("json");
        return c.json(await createUser(input), 201);
      });
    export default users;
@@ -39,9 +39,7 @@ and check the installed versions in package.json before using an API.
    Separate `app.get(...)` / `app.post(...)` statements on the same variable break type inference for the client.
 3. **Compose with `app.route()`** and export the type from the chained result:
    ```ts
-   const routes = new Hono()
-     .route('/users', users)
-     .route('/posts', posts);
+   const routes = new Hono().route("/users", users).route("/posts", posts);
    export type AppType = typeof routes;
    ```
    Register sub-routes before mounting them. `apps/web` imports `AppType` and uses `hc<AppType>` from `hono/client`.

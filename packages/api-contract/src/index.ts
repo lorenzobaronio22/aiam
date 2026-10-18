@@ -11,6 +11,8 @@ export type {
 
 export { validate } from "./validate.ts";
 
-export type { ApiEnv, ApiServices, UsersService } from "./services.ts";
+export { ConflictError, DomainError, NotFoundError } from "./errors.ts";
+
+export type { ApiEnv, ApiServices, MembersService } from "./services.ts";
 
 export * from "./schemas/index.ts";
