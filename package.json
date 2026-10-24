@@ -1,0 +1,30 @@
+{
+  "name": "aiam",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ready": "vp run -r build && vp check && vp run test:coverage",
+    "dev": "vp run api-contract#build && vp run --filter api-contract --filter api --filter website --parallel dev",
+    "test": "vp run --filter api-contract --filter api --filter website test",
+    "test:coverage": "vp run --filter api-contract --filter api --filter website test:coverage",
+    "test:e2e": "vp run --filter e2e test",
+    "test:e2e:headed": "vp run --filter e2e test:headed",
+    "test:all": "vp run test:coverage && vp run test:e2e",
+    "coverage:summary": "node scripts/coverage-summary.mjs"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.14.0",
+      "onFail": "download"
+    }
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}

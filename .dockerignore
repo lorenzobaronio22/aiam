@@ -1,34 +1,32 @@
-# Version control
-.git
-.github
+# Keep the build context small and deterministic. Build output is produced
+# inside the image, so never send it (or the local install) to the daemon.
 
-# Python
-__pycache__
-**/__pycache__
-*.py[oc]
-*.egg-info
-.pytest_cache
-.ruff_cache
-.uv-cache
-
-# Virtual environments (rebuilt inside the image; platform-specific)
-.venv
-
-# Frontend local artifacts (dependencies/build outputs are recreated in Docker)
+# Local installs and build output
 **/node_modules
 **/dist
-**/.vite
+**/dist-ssr
+**/coverage
+**/.nyc_output
 
-# Local runtime data (created at runtime, not baked into the image)
-data
+# Test output
+**/test-results
+**/playwright-report
+**/blob-report
+**/.features-gen
+**/playwright/.cache
 
-# Tests and docs (not needed to build or run the image)
-tests
-README.md
-AGENTS.md
+# Tooling, docs, and editor noise
+.git
+.github
+.vscode
+.idea
+docs
+**/*.log
+logs
+.DS_Store
+*.local
 
-# Docker / local tooling
-Dockerfile
-.dockerignore
-docker-compose.yml
+# Secrets — the runtime gets configuration from the environment
 .env
+.env.*
+!.env.example
